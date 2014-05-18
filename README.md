@@ -6,6 +6,8 @@ Using this plugin, you can add additional CSS rules to your current theme throug
 
 Ideas for future versions / todo:
 * Test in 2.0.18 (should work, only tested in 2.1 though)
+* Properly comment everything
 * Seperate styles for desktop/mobile
 * More preprocessors
-* Backup
+* ~~Backup~~
+* Preview mode

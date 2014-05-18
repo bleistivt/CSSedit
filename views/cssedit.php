@@ -1,5 +1,17 @@
 <?php if (!defined('APPLICATION')) exit(); ?>
 <h1><?php echo $this->Data['Title']; ?></h1>
+<?php
+$StyleRevisions = array_reverse(glob(PATH_UPLOADS.DS.'CSSedit'.DS.'*.css'));
+if (count($StyleRevisions) > 1 && method_exists('Gdn_Format', 'DateFull')) {
+	echo '<div class="Help Aside" style="border-top:none;"><h2>', T('Revisions'), '</h2><ul>';
+	foreach ($StyleRevisions as $rev) {
+		if (basename($rev) == 'source.css')
+			continue;
+		echo Wrap(Anchor(Gdn_Format::DateFull(basename($rev, '.css')), '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
+	}
+	echo '</ul></div>';
+}   
+?>
 <div class="Configuration">
    <div class="ConfigurationForm">
    

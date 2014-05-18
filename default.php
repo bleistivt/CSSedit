@@ -23,7 +23,7 @@ class CSSedit extends Gdn_Plugin {
 		if (IsMobile() && !C('Plugins.CSSedit.AddOnMobile'))
 			return;
 		if (C('Plugins.CSSedit.Stylesheet')) {
-			$Sender->AddCssFile('cache'.DS.'CSSedit'.DS.C('Plugins.CSSedit.Stylesheet'));
+			$Sender->AddCssFile('cache/CSSedit/'.C('Plugins.CSSedit.Stylesheet'));
 		}
 	}
 
@@ -34,12 +34,23 @@ class CSSedit extends Gdn_Plugin {
 
 	public function SettingsController_CSSedit_Create($Sender, $Args){
 		$Sender->Permission('Garden.Settings.Manage');
-		$StyleSheet = PATH_CACHE.DS.'CSSedit'.DS.'source.css';
+		$StyleSheetPath = PATH_UPLOADS.DS.'CSSedit'.DS;
+		$StyleSheet = $StyleSheetPath.'source.css';
+		$Source = '';
+		if (!file_exists($StyleSheetPath))
+			mkdir($StyleSheetPath, 0777, TRUE);
+		//This is for compatibility with v0.1 and will be removed in 1.0
+		$OldSheet = PATH_CACHE.DS.'CSSedit'.DS.'source.css';
+		if (!file_exists($StyleSheet) && file_exists($OldSheet)) {
+			rename($OldSheet, $StyleSheet);
+		}
 		if($Sender->Form->IsPostBack()){
 			$FormValues = $Sender->Form->FormValues();
 			$Source = GetValue('Style', $FormValues);
-			file_put_contents($StyleSheet, $Source);
 			$Preprocessor = GetValue('Preprocessor', $FormValues);
+			file_put_contents($StyleSheet, $Source);
+			file_put_contents($StyleSheetPath.time().'.css', $Source);
+			$this->limitRevisions();
 			SaveToConfig('Plugins.CSSedit.Preprocessor', $Preprocessor);
 			SaveToConfig('Plugins.CSSedit.AddOnMobile', GetValue('AddOnMobile', $FormValues));
 			if ($this->makeCSS($Sender, $Source, $Preprocessor, time())) {
@@ -62,6 +73,16 @@ class CSSedit extends Gdn_Plugin {
 		$Sender->AddJsFile('ace.js','plugins/CSSedit/js/ace-min-noconflict');
 		$Sender->AddJsFile('cssedit.js','plugins/CSSedit');
 		$Sender->Render($this->GetView('cssedit.php'));
+	}
+
+	protected function limitRevisions() {
+		$revs = glob(PATH_UPLOADS.DS.'CSSedit'.DS.'*.css');
+		$revcount = count($revs);
+		for ($i = 0; $revcount - $i > 21; $i++) {
+			if (basename($revs[$i]) == 'source.css')
+				continue;
+			unlink($revs[$i]);
+		}
 	}
 
 	protected function makeCSS($Sender, $String, $Preprocessor, $Token) {
