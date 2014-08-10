@@ -1,13 +1,14 @@
 <?php if (!defined('APPLICATION')) exit(); ?>
 <h1><?php echo $this->Data['Title']; ?></h1>
 <?php
-$StyleRevisions = array_reverse(glob(PATH_UPLOADS.DS.'CSSedit'.DS.'*.css'));
+$StyleRevisions = array_reverse(glob(PATH_UPLOADS.'/CSSedit/*.css'));
 if (count($StyleRevisions) > 1 && method_exists('Gdn_Format', 'DateFull')) {
 	echo '<div class="Help Aside" style="border-top:none;"><h2>', T('Revisions'), '</h2><ul>';
 	foreach ($StyleRevisions as $rev) {
 		if (basename($rev) == 'source.css')
 			continue;
-		echo Wrap(Anchor(Gdn_Format::DateFull(basename($rev, '.css')), '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
+		$revtime = Gdn_Format::DateFull(basename($rev, '.css'));
+		echo Wrap(Anchor($revtime, '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
 	}
 	echo '</ul></div>';
 }   
@@ -29,7 +30,7 @@ if (count($StyleRevisions) > 1 && method_exists('Gdn_Format', 'DateFull')) {
 		<?php echo $this->Form->TextBox('Style', array('MultiLine' => TRUE, 'class' => 'InputBox WideInput')); ?>
 		</li>
 		<li>
-		<?php echo $this->Form->DropDown('Preprocessor', array(0 => 'CSS', 1 => 'LESS')); ?>
+		<?php echo $this->Form->DropDown('Preprocessor', array(0 => 'CSS', 1 => 'LESS', 2 => 'SCSS')); ?>
 		<div style="display:inline-block;">
 			<?php echo $this->Form->CheckBox('AddOnMobile', T('Also add declarations to mobile style')); ?>
 		</div>

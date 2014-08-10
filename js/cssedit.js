@@ -2,8 +2,11 @@ jQuery(function() {
 	var editor = ace.edit('AceEditor');
 	var leave = false;
 	editor.setTheme('ace/theme/crimson_editor');
-	if (jQuery("#Form_Preprocessor option:selected").val() == '1') {
+	var initmode = jQuery("#Form_Preprocessor option:selected").val();
+	if (initmode == '1') {
 		editor.getSession().setMode('ace/mode/less');
+	} else if (initmode == '2') {
+		editor.getSession().setMode('ace/mode/scss');
 	} else {
 		editor.getSession().setMode('ace/mode/css');
 	}
@@ -21,6 +24,8 @@ jQuery(function() {
 		var selectboxvalue = jQuery("#Form_Preprocessor option:selected").val();
 		if (selectboxvalue == '1') {
 			editor.getSession().setMode('ace/mode/less');
+		} else if (selectboxvalue == '2') {
+			editor.getSession().setMode('ace/mode/scss');
 		} else {
 			editor.getSession().setMode('ace/mode/css');
 		}
