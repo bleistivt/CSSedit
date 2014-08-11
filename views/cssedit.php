@@ -2,12 +2,15 @@
 <h1><?php echo $this->Data['Title']; ?></h1>
 <?php
 $StyleRevisions = array_reverse(glob(PATH_UPLOADS.'/CSSedit/*.css'));
-if (count($StyleRevisions) > 1 && method_exists('Gdn_Format', 'DateFull')) {
+//2.0.x compatibility
+$altdate = method_exists('Gdn_Format', 'DateFull');
+if (count($StyleRevisions) > 1) {
 	echo '<div class="Help Aside" style="border-top:none;"><h2>', T('Revisions'), '</h2><ul>';
 	foreach ($StyleRevisions as $rev) {
 		if (basename($rev) == 'source.css')
 			continue;
-		$revtime = Gdn_Format::DateFull(basename($rev, '.css'));
+		$revtime = ($altdate) ? Gdn_Format::DateFull(basename($rev, '.css'))
+					: strftime(T('Date.DefaultDateTimeFormat', '%c'), basename($rev, '.css'));
 		echo Wrap(Anchor($revtime, '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
 	}
 	echo '</ul></div>';

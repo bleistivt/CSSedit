@@ -4,16 +4,18 @@ $PluginInfo['CSSedit'] = array(
 	'Description' => 'Add additional CSS (LESS/SCSS) Rules through a Dashboard Style Editor.',
 	'Version' => '0.3',
 	'RequiredApplications' => array('Vanilla' => '2.0.18'),
-	'Author' => "Bleistivt",
+	'Author' => 'Bleistivt',
 	'AuthorUrl' => 'http://bleistivt.net',
 	'SettingsUrl' => '/dashboard/settings/cssedit',
-	'MobileFriendy' => true
+	'MobileFriendly' => true
 );
 
 class CSSeditPlugin extends Gdn_Plugin {
 
-	//Adds the stylesheet to every page
+	//Adds the stylesheet to every page except the dashboard
 	public function Base_Render_Before($Sender) {
+		if ($Sender->MasterView != '' && $Sender->MasterView != 'default')
+			return;
 		if (IsMobile() && !C('Plugins.CSSedit.AddOnMobile'))
 			return;
 		if (C('Plugins.CSSedit.Stylesheet')) {
@@ -54,10 +56,10 @@ class CSSeditPlugin extends Gdn_Plugin {
 			//try to build the stylesheet
 			if ($this->makeCSS($Sender, $Source, $Preprocessor, time())) {
 				$Sender->InformMessage('<span class="InformSprite Check"></span> '
-						.T('Your changes were saved.', 'HasSprite'));
+						.T('Your changes have been saved.'), 'HasSprite');
 			} else {
 				$Sender->InformMessage('<span class="InformSprite Bug"></span> '
-						.T('Compilation Error: Please check your LESS'), 'Dismissable HasSprite');
+						.T('Compilation Error:'), 'Dismissable HasSprite');
 			}
 		} else {
 			//Prepare the form
@@ -91,7 +93,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 	//teturn true on success and false on failure
 	protected function makeCSS($Sender, $String, $Preprocessor, $Token) {
 		if(!class_exists('Minify_CSS_Compressor'))
-			include_once(dirname(__FILE__)'/lib/Compressor.php');
+			include_once(dirname(__FILE__).'/lib/Compressor.php');
 		//The token should be the creation timestamp
 		$Filename = $Token.'.css';
 		$CachePath = PATH_CACHE.'/CSSedit/';
