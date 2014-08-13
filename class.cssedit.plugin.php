@@ -1,8 +1,8 @@
 <?php
 $PluginInfo['CSSedit'] = array(
 	'Name' => 'CSSedit',
-	'Description' => 'Add additional CSS (LESS/SCSS) Rules through a Dashboard Style Editor.',
-	'Version' => '0.3',
+	'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
+	'Version' => '1.0',
 	'RequiredApplications' => array('Vanilla' => '2.0.18'),
 	'Author' => 'Bleistivt',
 	'AuthorUrl' => 'http://bleistivt.net',
@@ -18,7 +18,19 @@ class CSSeditPlugin extends Gdn_Plugin {
 			return;
 		if (IsMobile() && !C('Plugins.CSSedit.AddOnMobile'))
 			return;
-		if (C('Plugins.CSSedit.Stylesheet')) {
+		$Preview = Gdn::Session()->Stash('CSSeditPreview', '', false);
+		if ($Preview) {
+			//Preview a stylesheet
+			$Sender->Head->AddString('<style type="text/css">'.$Preview.'</style>');
+			$Sender->InformMessage(Wrap('', 'span', 
+					array('class' => 'InformSprite',
+						'style' => 'background:url('.$this->GetWebResource('icon.png').') no-repeat;background-size:100%;margin:15px 0 0 1px;')
+					)
+				.Wrap(T('You are looking at a preview of your changes.'), 'p')
+				.Wrap(Anchor(T('Return to the editor'), 'dashboard/settings/cssedit'), 'p'), 'HasSprite'
+			);
+		} elseif (C('Plugins.CSSedit.Stylesheet')) {
+			//Finally, add the actual stylesheet to the page
 			$Sender->AddCssFile('cache/CSSedit/'.C('Plugins.CSSedit.Stylesheet'));
 		}
 	}
@@ -26,19 +38,18 @@ class CSSeditPlugin extends Gdn_Plugin {
 	//Adds the CSSedit Link to the Dashboard
 	public function Base_GetAppSettingsMenuItems_Handler($Sender) {
 		$Menu = $Sender->EventArguments['SideMenu'];
-		$Menu->AddLink('Appearance', T('CSSedit'), 'settings/cssedit', 'Garden.Settings.Manage');
+		$Menu->AddLink('Appearance', T('CSS Editor'), 'settings/cssedit', 'Garden.Settings.Manage');
 	}
 
 	//The editor page
 	public function SettingsController_CSSedit_Create($Sender){
 		$Sender->Permission('Garden.Settings.Manage');
+		$Session = Gdn::Session();
+		//Check if preview button was toggled
+		$Preview = (GetValue('Preview', $Sender->Form->FormValues(), false));
+		//$Preview = (strtolower(GetValue(0, $Sender->RequestArgs)) == 'preview');
 		$StyleSheetPath = PATH_UPLOADS.'/CSSedit/';
-		$StyleSheet = $StyleSheetPath.'source.css';
-		//This is for compatibility with v0.1 and will be removed in 1.0
-		$OldSheet = PATH_CACHE.'/CSSedit/source.css';
-		if (!file_exists($StyleSheet) && file_exists($OldSheet)) {
-			rename($OldSheet, $StyleSheet);
-		}
+		$StyleSheet = ($Preview) ? $StyleSheetPath.'preview.css' : $StyleSheetPath.'source.css';
 		if($Sender->Form->IsPostBack()){
 			//Process a form submission
 			$FormValues = $Sender->Form->FormValues();
@@ -47,28 +58,40 @@ class CSSeditPlugin extends Gdn_Plugin {
 			//Write files to the stylesheet directory
 			if (!file_exists($StyleSheetPath))
 				mkdir($StyleSheetPath, 0755, true);
-			file_put_contents($StyleSheet, $Source);
-			file_put_contents($StyleSheetPath.time().'.css', $Source);
-			$this->limitRevisions();
+			//Don't save anything when preview was requested
+			if (!$Preview) {
+				file_put_contents($StyleSheet, $Source);
+				file_put_contents($StyleSheetPath.time().'.css', $Source);
+				$this->limitRevisions();
+			}
 			//Save the config values
 			SaveToConfig('Plugins.CSSedit.Preprocessor', $Preprocessor);
 			SaveToConfig('Plugins.CSSedit.AddOnMobile', GetValue('AddOnMobile', $FormValues));
 			//try to build the stylesheet
-			if ($this->makeCSS($Sender, $Source, $Preprocessor, time())) {
+			if ($this->makeCSS($Sender, $Source, $Preprocessor, time(), $Preview)) {
 				$Sender->InformMessage('<span class="InformSprite Check"></span> '
 						.T('Your changes have been saved.'), 'HasSprite');
 			} else {
 				$Sender->InformMessage('<span class="InformSprite Bug"></span> '
 						.T('Compilation Error:'), 'Dismissable HasSprite');
+				$Preview = false;
 			}
 		} else {
 			//Prepare the form
 			$Sender->Form->SetValue('Preprocessor', C('Plugins.CSSedit.Preprocessor'));
 			$Sender->Form->SetValue('AddOnMobile', C('Plugins.CSSedit.AddOnMobile'));
-			if (file_exists($StyleSheet)) {
+			Gdn::Session()->Stash('CSSeditPreview');
+			//Get uncompressed source from Session Stash
+			$Preview = Gdn::Session()->Stash('CSSeditPreviewSource');
+			if ($Preview) {
+				$Source = $Preview;
+				$Preview = false;
+			} elseif (file_exists($StyleSheet)) {
 				$Source = file_get_contents($StyleSheet);
 			}
 		}
+		if ($Preview)
+			Redirect('/');
 		//Render the editor page
 		$Sender->Form->SetValue('Style', $Source);
 		$Sender->AddSideMenu('settings/cssedit');
@@ -78,11 +101,11 @@ class CSSeditPlugin extends Gdn_Plugin {
 		$Sender->Render($this->GetView('cssedit.php'));
 	}
 
-	//Only keep the last 20 revisions in stylesheet directory
+	//Only keep the last 25 revisions in the stylesheet directory
 	protected function limitRevisions() {
 		$revs = glob(PATH_UPLOADS.'/CSSedit/*.css');
 		$revcount = count($revs);
-		for ($i = 0; $revcount - $i > 21; $i++) {
+		for ($i = 0; $revcount - $i > 26; $i++) {
 			if (basename($revs[$i]) == 'source.css')
 				continue;
 			unlink($revs[$i]);
@@ -90,10 +113,13 @@ class CSSeditPlugin extends Gdn_Plugin {
 	}
 
 	//Compile and minify the stylesheet
-	//teturn true on success and false on failure
-	protected function makeCSS($Sender, $String, $Preprocessor, $Token) {
+	//return true on success and false on failure
+	protected function makeCSS($Sender, $String, $Preprocessor, $Token, $Preview) {
 		if(!class_exists('Minify_CSS_Compressor'))
 			include_once(dirname(__FILE__).'/lib/Compressor.php');
+		//Save uncompressed source in Session Stash
+		if ($Preview)
+			Gdn::Session()->Stash('CSSeditPreviewSource', $String);
 		//The token should be the creation timestamp
 		$Filename = $Token.'.css';
 		$CachePath = PATH_CACHE.'/CSSedit/';
@@ -125,10 +151,15 @@ class CSSeditPlugin extends Gdn_Plugin {
 			}
 		}
 		//minify and save the stylesheet
-		file_put_contents($FullPath, Minify_CSS_Compressor::process($String));
-		if (C('Plugins.CSSedit.Stylesheet'))
-			unlink($CachePath.C('Plugins.CSSedit.Stylesheet'));
-		SaveToConfig('Plugins.CSSedit.Stylesheet', $Filename);
+		$String = Minify_CSS_Compressor::process($String);
+		if ($Preview) {
+			Gdn::Session()->Stash('CSSeditPreview', $String);
+		} else {
+			file_put_contents($FullPath, $String);
+			if (C('Plugins.CSSedit.Stylesheet'))
+				unlink($CachePath.C('Plugins.CSSedit.Stylesheet'));
+			SaveToConfig('Plugins.CSSedit.Stylesheet', $Filename);
+		}
 		return true;
 	}
 }

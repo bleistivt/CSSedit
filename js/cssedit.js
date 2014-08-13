@@ -1,8 +1,8 @@
-jQuery(function() {
+jQuery(function($) {
 	var editor = ace.edit('AceEditor');
 	var leave = false;
 	editor.setTheme('ace/theme/crimson_editor');
-	var initmode = jQuery("#Form_Preprocessor option:selected").val();
+	var initmode = $("#Form_Preprocessor option:selected").val();
 	if (initmode == '1') {
 		editor.getSession().setMode('ace/mode/less');
 	} else if (initmode == '2') {
@@ -12,16 +12,20 @@ jQuery(function() {
 	}
 	var css = document.getElementById('Form_Style').value;
 	editor.setValue(css);
-	jQuery('#AceEditor').show();
-	jQuery('#NoJsForm').hide();
-	jQuery('.CSSeditSave').on('click', function(e) {
+	$('#AceEditor').show();
+	$('#NoJsForm').hide();
+	$('.CSSeditPrev').show();
+	$('.CSSeditSave, .CSSeditPrev').on('click', function(e) {
 		e.preventDefault();
 		leave = true;
-		jQuery('#Form_Style').val(editor.getValue());
-		jQuery('#Form_CSSedit').submit();
+		$('#Form_Style').val(editor.getValue());
+		if ($(this).is('.CSSeditPrev')) {
+			$('#PreviewToggle').val(true);
+		}
+		$('#Form_CSSedit').submit();
 	});
-	jQuery('#Form_Preprocessor').change(function() {
-		var selectboxvalue = jQuery("#Form_Preprocessor option:selected").val();
+	$('#Form_Preprocessor').change(function() {
+		var selectboxvalue = $("#Form_Preprocessor option:selected").val();
 		if (selectboxvalue == '1') {
 			editor.getSession().setMode('ace/mode/less');
 		} else if (selectboxvalue == '2') {
@@ -30,19 +34,19 @@ jQuery(function() {
 			editor.getSession().setMode('ace/mode/css');
 		}
 	});
-	jQuery('.CSSrevision').click(function(e) {
+	$('.CSSrevision').click(function(e) {
 		e.preventDefault();
-		var time = jQuery(this).text();
-		jQuery.get(jQuery(this).attr('href'), function(data) {
+		var time = $(this).text();
+		$.get($(this).attr('href'), function(data) {
 			if (confirm('Load ' + time +
 				' revision?\nAll unsaved changes will be lost.')) {
 				editor.setValue(data);
 			}
 		});
 	});
-	jQuery(window).on('beforeunload', function() {
+	$(window).on('beforeunload', function() {
 		if (editor.getValue() != css && !leave) {
 			return 'Do you really want to leave? Your changes will be lost.';
 		}
-	}); 
+	});
 });

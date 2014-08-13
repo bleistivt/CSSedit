@@ -14,32 +14,34 @@ if (count($StyleRevisions) > 1) {
 		echo Wrap(Anchor($revtime, '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
 	}
 	echo '</ul></div>';
-}   
+}
 ?>
 <div class="Configuration">
    <div class="ConfigurationForm">
-   
+
 	<ul>
 		<li>
-			<div id="AceEditor" style="height:500px;display:none;"></div>
+			<div id="AceEditor" style="height:550px;border-bottom:1px solid #82bddd;display:none;"></div>
 		</li>
 	</ul>
 	<?php
-    echo $this->Form->Open(array('id' => 'Form_CSSedit'));
+	echo $this->Form->Open(array('id' => 'Form_CSSedit'));
 	echo $this->Form->Errors();
 	?>
-    <ul>
+	<ul>
 		<li id="NoJsForm">
 		<?php echo $this->Form->TextBox('Style', array('MultiLine' => TRUE, 'class' => 'InputBox WideInput')); ?>
 		</li>
 		<li>
 		<?php echo $this->Form->DropDown('Preprocessor', array(0 => 'CSS', 1 => 'LESS', 2 => 'SCSS')); ?>
 		<div style="display:inline-block;">
-			<?php echo $this->Form->CheckBox('AddOnMobile', T('Also add declarations to mobile style')); ?>
+			<?php echo $this->Form->CheckBox('AddOnMobile', T('Enable on mobile theme')); ?>
 		</div>
 		</li>
 		<li>
-		<?php echo $this->Form->Button(T('Save'), array('class' => 'Button CSSeditSave')); ?>
+		<?php echo $this->Form->Hidden('Preview', array('id' => 'PreviewToggle', 'value' => false));
+			  echo $this->Form->Button(T('Preview'), array('class' => 'Button CSSeditPrev', 'style' => 'display:none;'));
+			  echo $this->Form->Button(T('Save'), array('class' => 'Button CSSeditSave')); ?>
 		</li>
 	</ul>
 	<?php echo $this->Form->Close(); ?>
