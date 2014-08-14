@@ -2,7 +2,7 @@
 $PluginInfo['CSSedit'] = array(
 	'Name' => 'CSSedit',
 	'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
-	'Version' => '1.0',
+	'Version' => '1.0.1',
 	'RequiredApplications' => array('Vanilla' => '2.0.18'),
 	'Author' => 'Bleistivt',
 	'AuthorUrl' => 'http://bleistivt.net',
@@ -21,7 +21,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 		$Preview = Gdn::Session()->Stash('CSSeditPreview', '', false);
 		if ($Preview) {
 			//Preview a stylesheet
-			$Sender->Head->AddString('<style type="text/css">'.$Preview.'</style>');
+			$Sender->AddCssFile('cache/CSSedit/'.$Preview);
 			$Sender->InformMessage(Wrap('', 'span', 
 					array('class' => 'InformSprite',
 						'style' => 'background:url('.$this->GetWebResource('icon.png').') no-repeat;background-size:100%;margin:15px 0 0 1px;')
@@ -47,7 +47,6 @@ class CSSeditPlugin extends Gdn_Plugin {
 		$Session = Gdn::Session();
 		//Check if preview button was toggled
 		$Preview = (GetValue('Preview', $Sender->Form->FormValues(), false));
-		//$Preview = (strtolower(GetValue(0, $Sender->RequestArgs)) == 'preview');
 		$StyleSheetPath = PATH_UPLOADS.'/CSSedit/';
 		$StyleSheet = ($Preview) ? $StyleSheetPath.'preview.css' : $StyleSheetPath.'source.css';
 		if($Sender->Form->IsPostBack()){
@@ -62,7 +61,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 			if (!$Preview) {
 				file_put_contents($StyleSheet, $Source);
 				file_put_contents($StyleSheetPath.time().'.css', $Source);
-				$this->limitRevisions();
+				$this->CleanUp();
 			}
 			//Save the config values
 			SaveToConfig('Plugins.CSSedit.Preprocessor', $Preprocessor);
@@ -84,7 +83,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 			//Get uncompressed source from Session Stash
 			$Preview = Gdn::Session()->Stash('CSSeditPreviewSource');
 			if ($Preview) {
-				$Source = $Preview;
+				$Source = file_get_contents($Preview);
 				$Preview = false;
 			} elseif (file_exists($StyleSheet)) {
 				$Source = file_get_contents($StyleSheet);
@@ -101,8 +100,8 @@ class CSSeditPlugin extends Gdn_Plugin {
 		$Sender->Render($this->GetView('cssedit.php'));
 	}
 
-	//Only keep the last 25 revisions in the stylesheet directory
-	protected function limitRevisions() {
+	protected function CleanUp() {
+		//Only keep the last 25 revisions in the stylesheet directory 
 		$revs = glob(PATH_UPLOADS.'/CSSedit/*.css');
 		$revcount = count($revs);
 		for ($i = 0; $revcount - $i > 26; $i++) {
@@ -110,22 +109,30 @@ class CSSeditPlugin extends Gdn_Plugin {
 				continue;
 			unlink($revs[$i]);
 		}
+		//Remove cached previews
+		$CachePath = PATH_CACHE.'/CSSedit/';
+		foreach (glob(PATH_CACHE.'/CSSedit/*preview.css') as $g)
+			unlink($g);
+		if (file_exists($CachePath.'previewsrc.css'))
+			unlink($CachePath.'previewsrc.css');
 	}
 
 	//Compile and minify the stylesheet
-	//return true on success and false on failure
+	//returns true on success and false on failure
 	protected function makeCSS($Sender, $String, $Preprocessor, $Token, $Preview) {
 		if(!class_exists('Minify_CSS_Compressor'))
 			include_once(dirname(__FILE__).'/lib/Compressor.php');
-		//Save uncompressed source in Session Stash
-		if ($Preview)
-			Gdn::Session()->Stash('CSSeditPreviewSource', $String);
 		//The token should be the creation timestamp
 		$Filename = $Token.'.css';
 		$CachePath = PATH_CACHE.'/CSSedit/';
 		$FullPath = $CachePath.$Filename;
 		if (!file_exists($CachePath))
 			mkdir($CachePath, 0755, true);
+		//Save uncompressed source when in preview mode
+		if ($Preview) {
+			file_put_contents($CachePath.'previewsrc.css', $String);
+			Gdn::Session()->Stash('CSSeditPreviewSource', $CachePath.'previewsrc.css');
+		}
 		if ($Preprocessor == 1) {
 			//compile less
 			if(!class_exists('lessc'))
@@ -153,7 +160,8 @@ class CSSeditPlugin extends Gdn_Plugin {
 		//minify and save the stylesheet
 		$String = Minify_CSS_Compressor::process($String);
 		if ($Preview) {
-			Gdn::Session()->Stash('CSSeditPreview', $String);
+			file_put_contents($CachePath.$Token.'preview.css', $String);
+			Gdn::Session()->Stash('CSSeditPreview', $Token.'preview.css');
 		} else {
 			file_put_contents($FullPath, $String);
 			if (C('Plugins.CSSedit.Stylesheet'))
@@ -162,4 +170,5 @@ class CSSeditPlugin extends Gdn_Plugin {
 		}
 		return true;
 	}
+
 }
