@@ -2,7 +2,7 @@
 $PluginInfo['CSSedit'] = array(
 	'Name' => 'CSSedit',
 	'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
-	'Version' => '1.0.1',
+	'Version' => '1.0.2',
 	'RequiredApplications' => array('Vanilla' => '2.0.18'),
 	'Author' => 'Bleistivt',
 	'AuthorUrl' => 'http://bleistivt.net',
@@ -165,7 +165,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 		} else {
 			file_put_contents($FullPath, $String);
 			if (C('Plugins.CSSedit.Stylesheet'))
-				unlink($CachePath.C('Plugins.CSSedit.Stylesheet'));
+				@unlink($CachePath.C('Plugins.CSSedit.Stylesheet'));
 			SaveToConfig('Plugins.CSSedit.Stylesheet', $Filename);
 		}
 		return true;
