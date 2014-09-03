@@ -46,14 +46,14 @@ class CSSeditPlugin extends Gdn_Plugin {
 		$Sender->Permission('Garden.Settings.Manage');
 		$Session = Gdn::Session();
 		//Check if preview button was toggled
-		$Preview = (GetValue('Preview', $Sender->Form->FormValues(), false));
+		$Preview = (val('Preview', $Sender->Form->FormValues(), false));
 		$StyleSheetPath = PATH_UPLOADS.'/CSSedit/';
 		$StyleSheet = ($Preview) ? $StyleSheetPath.'preview.css' : $StyleSheetPath.'source.css';
 		if($Sender->Form->IsPostBack()){
 			//Process a form submission
 			$FormValues = $Sender->Form->FormValues();
-			$Source = GetValue('Style', $FormValues, '');
-			$Preprocessor = GetValue('Preprocessor', $FormValues, 0);
+			$Source = val('Style', $FormValues, '');
+			$Preprocessor = val('Preprocessor', $FormValues, 0);
 			//Write files to the stylesheet directory
 			if (!file_exists($StyleSheetPath))
 				mkdir($StyleSheetPath, 0755, true);
@@ -65,7 +65,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 			}
 			//Save the config values
 			SaveToConfig('Plugins.CSSedit.Preprocessor', $Preprocessor);
-			SaveToConfig('Plugins.CSSedit.AddOnMobile', GetValue('AddOnMobile', $FormValues));
+			SaveToConfig('Plugins.CSSedit.AddOnMobile', val('AddOnMobile', $FormValues));
 			//try to build the stylesheet
 			if ($this->makeCSS($Sender, $Source, $Preprocessor, time(), $Preview)) {
 				$Sender->InformMessage('<span class="InformSprite Check"></span> '
