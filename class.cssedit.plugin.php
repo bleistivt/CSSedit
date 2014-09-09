@@ -164,8 +164,8 @@ class CSSeditPlugin extends Gdn_Plugin {
 			Gdn::Session()->Stash('CSSeditPreview', $Token.'preview.css');
 		} else {
 			file_put_contents($FullPath, $String);
-			if (C('Plugins.CSSedit.Stylesheet'))
-				@unlink($CachePath.C('Plugins.CSSedit.Stylesheet'));
+			if (C('Plugins.CSSedit.Stylesheet') && file_exists(C('Plugins.CSSedit.Stylesheet')))
+				unlink($CachePath.C('Plugins.CSSedit.Stylesheet'));
 			SaveToConfig('Plugins.CSSedit.Stylesheet', $Filename);
 		}
 		return true;
