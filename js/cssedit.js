@@ -10,6 +10,9 @@ jQuery(function($) {
 	} else {
 		editor.getSession().setMode('ace/mode/css');
 	}
+	if (localStorage.getItem('scrollposition')) {
+		editor.getSession().setScrollTop(localStorage.getItem('scrollposition'));
+	}
 	var css = document.getElementById('Form_Style').value;
 	editor.setValue(css);
 	$('#AceEditor').show();
@@ -22,6 +25,7 @@ jQuery(function($) {
 		if ($(this).is('.CSSeditPrev')) {
 			$('#PreviewToggle').val(true);
 		}
+		localStorage.setItem('scrollposition', editor.getSession().getScrollTop());
 		$('#Form_CSSedit').submit();
 	});
 	$('#Form_Preprocessor').change(function() {
