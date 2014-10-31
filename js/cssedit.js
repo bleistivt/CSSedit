@@ -10,11 +10,14 @@ jQuery(function($) {
 	} else {
 		editor.getSession().setMode('ace/mode/css');
 	}
-	if (localStorage.getItem('scrollposition')) {
-		editor.getSession().setScrollTop(localStorage.getItem('scrollposition'));
-	}
 	var css = document.getElementById('Form_Style').value;
-	editor.setValue(css);
+	editor.setValue(css, -1);
+	editor.focus();
+	if (localStorage.getItem('scrollposition')) {
+		try {
+			editor.moveCursorToPosition(JSON.parse(localStorage.getItem('scrollposition')));
+		} catch (e) { }
+	}
 	$('#AceEditor').show();
 	$('#NoJsForm').hide();
 	$('.CSSeditPrev').show();
@@ -25,7 +28,7 @@ jQuery(function($) {
 		if ($(this).is('.CSSeditPrev')) {
 			$('#PreviewToggle').val(true);
 		}
-		localStorage.setItem('scrollposition', editor.getSession().getScrollTop());
+		localStorage.setItem('scrollposition', JSON.stringify(editor.getCursorPosition()));
 		$('#Form_CSSedit').submit();
 	});
 	$('#Form_Preprocessor').change(function() {
