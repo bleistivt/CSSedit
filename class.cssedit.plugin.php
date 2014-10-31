@@ -24,7 +24,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 			$Sender->AddCssFile('cache/CSSedit/'.$Preview);
 			$Sender->InformMessage(Wrap('', 'span', 
 					array('class' => 'InformSprite',
-						'style' => 'background:url('.Url('/plugins/CSSedit/icon.png').') no-repeat;background-size:100%;margin:15px 0 0 1px;')
+						'style' => 'background:url('.SmartAsset('/plugins/CSSedit/icon.png').') no-repeat;background-size:100%;margin:15px 0 0 1px;')
 					)
 				.Wrap(T('You are looking at a preview of your changes.'), 'p')
 				.Wrap(Anchor(T('Return to the editor'), 'dashboard/settings/cssedit'), 'p'), 'HasSprite'
