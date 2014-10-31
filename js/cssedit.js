@@ -15,7 +15,9 @@ jQuery(function($) {
 	editor.focus();
 	if (localStorage.getItem('scrollposition')) {
 		try {
-			editor.moveCursorToPosition(JSON.parse(localStorage.getItem('scrollposition')));
+			var sp = JSON.parse(localStorage.getItem('scrollposition'));
+			editor.moveCursorToPosition(sp.pos);
+			editor.getSession().setScrollTop(sp.scroll);
 		} catch (e) { }
 	}
 	$('#AceEditor').show();
@@ -28,7 +30,10 @@ jQuery(function($) {
 		if ($(this).is('.CSSeditPrev')) {
 			$('#PreviewToggle').val(true);
 		}
-		localStorage.setItem('scrollposition', JSON.stringify(editor.getCursorPosition()));
+		localStorage.setItem('scrollposition', JSON.stringify({
+			pos : editor.getCursorPosition(),
+			scroll : editor.getSession().getScrollTop()
+		}));
 		$('#Form_CSSedit').submit();
 	});
 	$('#Form_Preprocessor').change(function() {
