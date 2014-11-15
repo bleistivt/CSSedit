@@ -1,4 +1,5 @@
-<?php
+<?php if (!defined('APPLICATION')) exit();
+
 $PluginInfo['CSSedit'] = array(
 	'Name' => 'CSSedit',
 	'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
