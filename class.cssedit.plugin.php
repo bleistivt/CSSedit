@@ -8,6 +8,7 @@ $PluginInfo['CSSedit'] = array(
 	'Author' => 'Bleistivt',
 	'AuthorUrl' => 'http://bleistivt.net',
 	'SettingsUrl' => '/dashboard/settings/cssedit',
+	'License' => 'GNU GPL2',
 	'MobileFriendly' => true
 );
 
