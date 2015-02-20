@@ -4,7 +4,7 @@ $PluginInfo['CSSedit'] = array(
     'Name' => 'CSSedit',
     'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
     'Version' => '1.0.3',
-    'RequiredApplications' => array('Vanilla' => '2.0.18'),
+    'RequiredApplications' => array('Vanilla' => '2.1'),
     'Author' => 'Bleistivt',
     'AuthorUrl' => 'http://bleistivt.net',
     'SettingsPermission' => 'Garden.Settings.Manage',
@@ -17,7 +17,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
     // Adds the stylesheet to every page except the dashboard.
     public function Base_Render_Before($Sender) {
-        if (!in_array($Sender->MasterView, array('', 'default')) {
+        if (!in_array($Sender->MasterView, array('', 'default'))) {
             return;
         }
         if (IsMobile() && !C('Plugins.CSSedit.AddOnMobile')) {
@@ -64,6 +64,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         $Preview = val('Preview', $Sender->Form->FormValues(), false);
         $StyleSheetPath = PATH_UPLOADS.'/CSSedit/';
         $StyleSheet = ($Preview) ? $StyleSheetPath.'preview.css' : $StyleSheetPath.'source.css';
+        $Source = '';
 
         if($Sender->Form->AuthenticatedPostBack()){
             // Process a form submission.
@@ -157,9 +158,6 @@ class CSSeditPlugin extends Gdn_Plugin {
     // Compile and minify the stylesheet.
     // Returns true on success and false on failure.
     protected function makeCSS($Sender, $String, $Preprocessor, $Preview) {
-        if (!class_exists('Minify_CSS_Compressor')) {
-            include_once(dirname(__FILE__).'/lib/Compressor.php');
-        }
         // Use the creation timestamp as filename.
         $Token = time();
         $Filename = $Token.'.css';
@@ -177,9 +175,6 @@ class CSSeditPlugin extends Gdn_Plugin {
 
         if ($Preprocessor == 1) {
             // Compile LESS
-            if (!class_exists('lessc')) {
-                include_once(dirname(__FILE__).'/lib/lessc.inc.php');
-            }
             $less = new lessc;
             try {
                 $String = $less->compile($String);
@@ -190,9 +185,6 @@ class CSSeditPlugin extends Gdn_Plugin {
             }
         } elseif ($Preprocessor == 2) {
             // Compile SCSS
-            if (!class_exists('scssc')) {
-                include_once(dirname(__FILE__).'/lib/scss.inc.php');
-            }
             $scss = new scssc();
             try {
                 $String = $scss->compile($String);
