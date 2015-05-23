@@ -20,6 +20,7 @@ jQuery(function ($) {
         };
 
     setMode(initmode);
+    editor.$blockScrolling = Infinity;
     editor.setTheme('ace/theme/crimson_editor');
     editor.setValue(css, -1);
     editor.focus();

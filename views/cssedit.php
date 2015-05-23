@@ -37,6 +37,12 @@ if (count($StyleRevisions) > 1) {
         </div>
         </li>
         <li>
+          <?php if ($this->Form->GetValue('Style') && C('Garden.Theme') == 'default') {
+                    // taget="_blank" until there is a way to download a file from a popup.
+                    echo Anchor(T('Export as theme'), '/settings/cssexport', array('target' => '_blank'));
+                } ?>
+        </li>
+        <li>
         <?php echo $this->Form->Hidden('Preview', array('id' => 'PreviewToggle', 'value' => false));
               echo $this->Form->Button('Preview', array('class' => 'Button CSSeditPrev', 'style' => 'display:none;'));
               echo $this->Form->Button('Save', array('class' => 'Button CSSeditSave')); ?>

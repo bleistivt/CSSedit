@@ -3,7 +3,7 @@
 $PluginInfo['CSSedit'] = array(
     'Name' => 'CSSedit',
     'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
-    'Version' => '1.0.3',
+    'Version' => '1.1',
     'RequiredApplications' => array('Vanilla' => '2.1'),
     'Author' => 'Bleistivt',
     'AuthorUrl' => 'http://bleistivt.net',
@@ -56,7 +56,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
 
     // The editor page
-    public function SettingsController_CSSedit_Create($Sender){
+    public function SettingsController_CSSedit_Create($Sender) {
         $Sender->Permission('Garden.Settings.Manage');
         $Session = Gdn::Session();
 
@@ -66,7 +66,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         $StyleSheet = ($Preview) ? $StyleSheetPath.'preview.css' : $StyleSheetPath.'source.css';
         $Source = '';
 
-        if($Sender->Form->AuthenticatedPostBack()){
+        if ($Sender->Form->AuthenticatedPostBack()) {
             // Process a form submission.
             $FormValues = $Sender->Form->FormValues();
             $Source = val('Style', $FormValues, '');
@@ -129,9 +129,77 @@ class CSSeditPlugin extends Gdn_Plugin {
         $Sender->AddJsFile('ace.js', 'plugins/CSSedit/js/ace-min-noconflict');
         $Sender->AddJsFile('cssedit.js', 'plugins/CSSedit');
 
-        $Sender->Render($this->GetView('cssedit.php'));
+        $Sender->Render('cssedit', '', 'plugins/CSSedit');
     }
 
+    // Download the style as a theme.
+    public function SettingsController_CSSexport_Create($Sender) {
+        $Sender->Permission('Garden.Settings.Manage');
+        // $ThemeInfo array
+        $Default = array(
+            'Name' => T('Untitled'),
+            'Version' => '1.0',
+            'Author' => Gdn::Session()->User->Name,
+            'Description' => T('Created with CSSedit plugin, ').Gdn_Format::Date()
+        );
+
+        if ($Sender->Form->AuthenticatedPostBack()) {
+            $FormValues = $Sender->Form->FormValues();
+            array_map('trim', $FormValues);
+
+            foreach ($Default as $Key => &$Val) {
+                $Val = val($Key, $FormValues, $Val);
+            }
+            $Slug = Gdn_Format::Url($Default['Name']);
+
+            // Write the contents of the about.php file.
+            $About = "<?php if (!defined('APPLICATION')) exit();\n\n"
+                .'$ThemeInfo[\''.$Slug.'\'] = '.var_export($Default, true).";\n";
+
+            $Zip = new ZipArchive;
+            $File = tempnam(sys_get_temp_dir(), 'css');
+
+            if ($Zip->open($File, ZIPARCHIVE::OVERWRITE) === true) {
+
+                $Stylesheet = C('Plugins.CSSedit.Stylesheet');
+                if ($Stylesheet) {
+
+                    // Add the stylesheet to the archive.
+                    if (!C('Plugins.CSSedit.Preprocessor')) {
+                        $Zip->addFile(PATH_UPLOADS.'/CSSedit/source.css', $Slug.'/design/custom.css');
+                    } else {
+                        // Add the source as a text file if a preprocessor is used.
+                        $Zip->addFile(PATH_CACHE.'/CSSedit/'.$Stylesheet, $Slug.'/design/custom.css');
+                        $Zip->addFile(PATH_UPLOADS.'/CSSedit/source.css', $Slug.'/design/source.txt');
+                    }
+                    // Add the theme info file.
+                    $Zip->addFromString($Slug.'/about.php', $About);
+                    $Zip->close();
+
+                    // Serve the file.
+                    ob_end_clean();
+                    // Controller->Header() only works when the page is rendered.
+                    header('Content-Type: application/zip');
+                    header('Content-Length: '.filesize($File));
+                    header('Content-Disposition: attachment; filename="'.$Slug.'.zip"');
+                    readfile($File);
+                    unlink($File);
+                    exit();
+
+                } else {
+                    $Sender->Form->AddError(T('No stylesheet found.'));
+                }
+
+            } else {
+                $Sender->Form->AddError(T('Couldn\'t create zip file.'));
+            }
+        }
+        $Sender->Form->SetData($Default);
+
+        $Sender->AddSideMenu();
+        $Sender->SetData('Title', 'Export as theme');
+        $Sender->Render('export', '', 'plugins/CSSedit');
+    }
 
     protected function CleanUp() {
         // Only keep the last 25 revisions in the stylesheet directory.
