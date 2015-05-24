@@ -197,7 +197,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         $Sender->Form->SetData($Default);
 
         $Sender->AddSideMenu();
-        $Sender->SetData('Title', 'Export as theme');
+        $Sender->SetData('Title', T('Export as theme'));
         $Sender->Render('export', '', 'plugins/CSSedit');
     }
 
