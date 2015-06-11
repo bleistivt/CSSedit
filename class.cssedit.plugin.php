@@ -1,4 +1,4 @@
-<?php if (!defined('APPLICATION')) exit();
+<?php
 
 $PluginInfo['CSSedit'] = array(
     'Name' => 'CSSedit',
@@ -153,7 +153,7 @@ class CSSeditPlugin extends Gdn_Plugin {
             $Slug = Gdn_Format::Url($Default['Name']);
 
             // Write the contents of the about.php file.
-            $About = "<?php if (!defined('APPLICATION')) exit();\n\n"
+            $About = "<?php\n\n"
                 .'$ThemeInfo[\''.$Slug.'\'] = '.var_export($Default, true).";\n";
 
             $Zip = new ZipArchive;
