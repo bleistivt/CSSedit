@@ -1,26 +1,26 @@
 <?php if (!defined('APPLICATION')) exit(); ?>
 
-<h1><?php echo $this->Data('Title'); ?></h1>
-<?php echo $this->Form->Open().$this->Form->Errors();?>
+<h1><?php echo $this->data('Title'); ?></h1>
+<?php echo $this->Form->open().$this->Form->errors();?>
 <ul>
   <li>
-    <div class="Info"><?php echo T('This packages your stylesheet so that it can be installed like a regular theme. <strong>If you have made changes, save before using this.</strong>'); ?></p>
+    <div class="Info"><?php echo t('This packages your stylesheet so that it can be installed like a regular theme. <strong>If you have made changes, save before using this.</strong>'); ?></p>
   </li>
   <li>
-    <?php echo $this->Form->Label('Name')
-        .$this->Form->TextBox('Name'); ?>
+    <?php echo $this->Form->label('Name')
+        .$this->Form->textBox('Name'); ?>
   </li>
   <li>
-    <?php echo $this->Form->Label('Version')
-        .$this->Form->TextBox('Version', array('style' => 'width: 50px;')); ?>
+    <?php echo $this->Form->label('Version')
+        .$this->Form->textBox('Version', array('style' => 'width: 50px;')); ?>
   </li>
   <li>
-    <?php echo $this->Form->Label('Author')
-        .$this->Form->TextBox('Author'); ?>
+    <?php echo $this->Form->label('Author')
+        .$this->Form->textBox('Author'); ?>
   </li>
   <li>
-    <?php echo $this->Form->Label('Description')
-        .$this->Form->TextBox('Description', array('MultiLine' => true)); ?>
+    <?php echo $this->Form->label('Description')
+        .$this->Form->textBox('Description', array('MultiLine' => true)); ?>
   </li>
 </ul>
-<?php echo $this->Form->Close('Export'); ?>
+<?php echo $this->Form->close('Export'); ?>
