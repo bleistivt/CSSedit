@@ -8,7 +8,7 @@ $PluginInfo['CSSedit'] = array(
     'Author' => 'Bleistivt',
     'AuthorUrl' => 'http://bleistivt.net',
     'SettingsPermission' => 'Garden.Settings.Manage',
-    'SettingsUrl' => '/dashboard/settings/cssedit',
+    'SettingsUrl' => 'settings/cssedit',
     'License' => 'GNU GPL2',
     'MobileFriendly' => true
 );
@@ -16,265 +16,260 @@ $PluginInfo['CSSedit'] = array(
 class CSSeditPlugin extends Gdn_Plugin {
 
     // Adds the stylesheet to every page except the dashboard.
-    public function Base_Render_Before($Sender) {
-        if (!in_array($Sender->MasterView, array('', 'default'))) {
+    public function base_render_before($sender) {
+        if (!in_array($sender->MasterView, array('', 'default'))) {
             return;
         }
-        if (IsMobile() && !C('Plugins.CSSedit.AddOnMobile')) {
+        if (isMobile() && !c('Plugins.CSSedit.AddOnMobile')) {
             return;
         }
 
-        if ($Preview = Gdn::Session()->Stash('CSSeditPreview', '', false)) {
+        if ($preview = Gdn::session()->stash('CSSeditPreview', '', false)) {
             // Preview a stylesheet
-            $Sender->AddCssFile('cache/CSSedit/'.$Preview);
-            $Sender->InformMessage(
-                Wrap('', 'span',
+            $sender->addCssFile('cache/CSSedit/'.$preview);
+            $sender->informMessage(
+                wrap('', 'span',
                     array(
                         'class' => 'InformSprite',
                         'style' => 'background:url('
-                                   .SmartAsset('/plugins/CSSedit/icon.png')
+                                   .smartAsset('/plugins/CSSedit/icon.png')
                                    .') no-repeat;background-size:100%;margin:15px 0 0 1px;'
                     )
                 )
-                .Wrap(T('You are looking at a preview of your changes.'), 'p')
-                .Wrap(Anchor(T('Return to the editor'), 'dashboard/settings/cssedit'), 'p'),
+                .wrap(t('You are looking at a preview of your changes.'), 'p')
+                .wrap(anchor(t('Return to the editor'), 'settings/cssedit'), 'p'),
                 'HasSprite'
             );
 
-        } elseif (C('Plugins.CSSedit.Stylesheet')) {
+        } elseif (c('Plugins.CSSedit.Stylesheet')) {
             // Finally, add the actual stylesheet to the page.
-            $Sender->AddCssFile('cache/CSSedit/'.C('Plugins.CSSedit.Stylesheet'));
+            $sender->addCssFile('cache/CSSedit/'.c('Plugins.CSSedit.Stylesheet'));
         }
     }
 
 
     // Adds the CSSedit Link to the Dashboard.
-    public function Base_GetAppSettingsMenuItems_Handler($Sender) {
-        $Menu = $Sender->EventArguments['SideMenu'];
-        $Menu->AddLink('Appearance', T('CSS Editor'), 'settings/cssedit', 'Garden.Settings.Manage');
+    public function base_getAppSettingsMenuItems_handler($sender, &$args) {
+        $args['SideMenu']->addLink('Appearance', t('CSS Editor'), 'settings/cssedit', 'Garden.Settings.Manage');
     }
 
 
     // The editor page
-    public function SettingsController_CSSedit_Create($Sender) {
-        $Sender->Permission('Garden.Settings.Manage');
-        $Session = Gdn::Session();
+    public function settingsController_cssEdit_create($sender) {
+        $sender->permission('Garden.Settings.Manage');
 
         // Check if the preview button was toggled.
-        $Preview = val('Preview', $Sender->Form->FormValues(), false);
-        $StyleSheetPath = PATH_UPLOADS.'/CSSedit/';
-        $StyleSheet = ($Preview) ? $StyleSheetPath.'preview.css' : $StyleSheetPath.'source.css';
-        $Source = '';
+        $preview = val('Preview', $sender->Form->formValues(), false);
+        $styleSheetPath = PATH_UPLOADS.'/CSSedit/';
+        $styleSheet = ($preview) ? $styleSheetPath.'preview.css' : $styleSheetPath.'source.css';
+        $source = '';
 
-        if ($Sender->Form->AuthenticatedPostBack()) {
+        if ($sender->Form->authenticatedPostBack()) {
             // Process a form submission.
-            $FormValues = $Sender->Form->FormValues();
-            $Source = val('Style', $FormValues, '');
-            $Preprocessor = val('Preprocessor', $FormValues, 0);
+            $formValues = $sender->Form->formValues();
+            $source = val('Style', $formValues, '');
+            $preprocessor = val('Preprocessor', $formValues, 0);
 
             // Write files to the stylesheet directory.
-            if (!file_exists($StyleSheetPath)) {
-                mkdir($StyleSheetPath, 0755, true);
+            if (!file_exists($styleSheetPath)) {
+                mkdir($styleSheetPath, 0755, true);
             }
             // Save as revision if we are not in preview mode.
-            if (!$Preview) {
-                file_put_contents($StyleSheet, $Source);
-                file_put_contents($StyleSheetPath.time().'.css', $Source);
-                $this->CleanUp();
+            if (!$preview) {
+                file_put_contents($styleSheet, $source);
+                file_put_contents($styleSheetPath.time().'.css', $source);
+                $this->cleanUp();
             }
 
             // Save the config values.
-            SaveToConfig('Plugins.CSSedit.Preprocessor', $Preprocessor);
-            SaveToConfig('Plugins.CSSedit.AddOnMobile', val('AddOnMobile', $FormValues));
+            saveToConfig('Plugins.CSSedit.Preprocessor', $preprocessor);
+            saveToConfig('Plugins.CSSedit.AddOnMobile', val('AddOnMobile', $formValues));
 
             // Try to build the stylesheet.
-            if ($this->makeCSS($Sender, $Source, $Preprocessor, $Preview)) {
-                $Sender->InformMessage(
-                    '<span class="InformSprite Check"></span> '.T('Your changes have been saved.'),
+            if ($this->makeCSS($sender, $source, $preprocessor, $preview)) {
+                $sender->informMessage(
+                    '<span class="InformSprite Check"></span> '.t('Your changes have been saved.'),
                     'HasSprite'
                 );
             } else {
-                $Sender->InformMessage(
-                    '<span class="InformSprite Bug"></span> '.T('Compilation Error:'),
+                $sender->informMessage(
+                    '<span class="InformSprite Bug"></span> '.t('Compilation Error:'),
                     'Dismissable HasSprite'
                 );
-                $Preview = false;
+                $preview = false;
             }
 
         } else {
             // Prepare the form.
-            $Sender->Form->SetValue('Preprocessor', C('Plugins.CSSedit.Preprocessor'));
-            $Sender->Form->SetValue('AddOnMobile', C('Plugins.CSSedit.AddOnMobile'));
-            Gdn::Session()->Stash('CSSeditPreview');
+            $sender->Form->setValue('Preprocessor', c('Plugins.CSSedit.Preprocessor'));
+            $sender->Form->setValue('AddOnMobile', c('Plugins.CSSedit.AddOnMobile'));
+            Gdn::session()->stash('CSSeditPreview');
             //Get the uncompressed source from the Session Stash.
-            $Preview = Gdn::Session()->Stash('CSSeditPreviewSource');
+            $preview = Gdn::session()->stash('CSSeditPreviewSource');
 
-            if ($Preview) {
-                $Source = file_get_contents($Preview);
-                $Preview = false;
-            } elseif (file_exists($StyleSheet)) {
-                $Source = file_get_contents($StyleSheet);
+            if ($preview) {
+                $source = file_get_contents($preview);
+                $preview = false;
+            } elseif (file_exists($styleSheet)) {
+                $source = file_get_contents($styleSheet);
             }
         }
 
-        if ($Preview) {
-            Redirect('/');
+        if ($preview) {
+            redirect('/');
         }
 
         //Render the editor page
-        $Sender->Form->SetValue('Style', $Source);
-        $Sender->SetData('Title', T('CSS Editor'));
+        $sender->Form->setValue('Style', $source);
+        $sender->title(t('CSS Editor'));
 
-        $Sender->AddSideMenu('settings/cssedit');
-        $Sender->AddJsFile('ace.js', 'plugins/CSSedit/js/ace-min-noconflict');
-        $Sender->AddJsFile('cssedit.js', 'plugins/CSSedit');
+        $sender->addSideMenu('settings/cssedit');
+        $sender->addJsFile('ace.js', 'plugins/CSSedit/js/ace-min-noconflict');
+        $sender->addJsFile('cssedit.js', 'plugins/CSSedit');
 
-        $Sender->Render('cssedit', '', 'plugins/CSSedit');
+        $sender->render('cssedit', '', 'plugins/CSSedit');
     }
 
     // Download the style as a theme.
-    public function SettingsController_CSSexport_Create($Sender) {
-        $Sender->Permission('Garden.Settings.Manage');
+    public function settingsController_cssExport_create($sender) {
+        $sender->permission('Garden.Settings.Manage');
         // $ThemeInfo array
-        $Default = array(
-            'Name' => T('Untitled'),
+        $default = array(
+            'Name' => t('Untitled'),
             'Version' => '1.0',
-            'Author' => Gdn::Session()->User->Name,
-            'Description' => T('Created with CSSedit plugin, ').Gdn_Format::Date()
+            'Author' => Gdn::session()->User->Name,
+            'Description' => t('Created with CSSedit plugin, ').Gdn_Format::date()
         );
 
-        if ($Sender->Form->AuthenticatedPostBack()) {
-            $FormValues = $Sender->Form->FormValues();
-            array_map('trim', $FormValues);
+        if ($sender->Form->authenticatedPostBack()) {
+            $formValues = $sender->Form->formValues();
+            array_map('trim', $formValues);
 
-            foreach ($Default as $Key => &$Val) {
-                $Val = val($Key, $FormValues, $Val);
+            foreach ($default as $key => &$val) {
+                $val = val($key, $formValues, $val);
             }
-            $Slug = Gdn_Format::Url($Default['Name']);
+            $slug = Gdn_Format::url($default['Name']);
 
             // Write the contents of the about.php file.
-            $About = "<?php\n\n"
-                .'$ThemeInfo[\''.$Slug.'\'] = '.var_export($Default, true).";\n";
+            $about = "<?php\n\n"
+                .'$ThemeInfo[\''.$slug.'\'] = '.var_export($default, true).";\n";
 
-            $Zip = new ZipArchive;
-            $File = tempnam(sys_get_temp_dir(), 'css');
+            $zip = new ZipArchive;
+            $file = tempnam(sys_get_temp_dir(), 'css');
 
-            if ($Zip->open($File, ZIPARCHIVE::OVERWRITE) === true) {
+            if ($zip->open($file, ZIPARCHIVE::OVERWRITE) === true) {
 
-                $Stylesheet = C('Plugins.CSSedit.Stylesheet');
-                if ($Stylesheet) {
+                $stylesheet = c('Plugins.CSSedit.Stylesheet');
+                if ($stylesheet) {
 
                     // Add the stylesheet to the archive.
-                    if (!C('Plugins.CSSedit.Preprocessor')) {
-                        $Zip->addFile(PATH_UPLOADS.'/CSSedit/source.css', $Slug.'/design/custom.css');
+                    if (!c('Plugins.CSSedit.Preprocessor')) {
+                        $zip->addFile(PATH_UPLOADS.'/CSSedit/source.css', $slug.'/design/custom.css');
                     } else {
                         // Add the source as a text file if a preprocessor is used.
-                        $Zip->addFile(PATH_CACHE.'/CSSedit/'.$Stylesheet, $Slug.'/design/custom.css');
-                        $Zip->addFile(PATH_UPLOADS.'/CSSedit/source.css', $Slug.'/design/source.txt');
+                        $zip->addFile(PATH_CACHE.'/CSSedit/'.$stylesheet, $slug.'/design/custom.css');
+                        $zip->addFile(PATH_UPLOADS.'/CSSedit/source.css', $slug.'/design/source.txt');
                     }
                     // Add the theme info file.
-                    $Zip->addFromString($Slug.'/about.php', $About);
-                    $Zip->close();
+                    $zip->addFromString($slug.'/about.php', $about);
+                    $zip->close();
 
                     // Serve the file.
                     ob_end_clean();
                     // Controller->Header() only works when the page is rendered.
                     header('Content-Type: application/zip');
-                    header('Content-Length: '.filesize($File));
-                    header('Content-Disposition: attachment; filename="'.$Slug.'.zip"');
-                    readfile($File);
-                    unlink($File);
+                    header('Content-Length: '.filesize($file));
+                    header('Content-Disposition: attachment; filename="'.$slug.'.zip"');
+                    readfile($file);
+                    unlink($file);
                     exit();
 
                 } else {
-                    $Sender->Form->AddError(T('No stylesheet found.'));
+                    $sender->Form->addError(t('No stylesheet found.'));
                 }
 
             } else {
-                $Sender->Form->AddError(T('Couldn\'t create zip file.'));
+                $sender->Form->addError(t('Couldn\'t create zip file.'));
             }
         }
-        $Sender->Form->SetData($Default);
+        $sender->Form->setData($default);
 
-        $Sender->AddSideMenu();
-        $Sender->SetData('Title', T('Export as theme'));
-        $Sender->Render('export', '', 'plugins/CSSedit');
+        $sender->addSideMenu();
+        $sender->title(t('Export as theme'));
+        $sender->render('export', '', 'plugins/CSSedit');
     }
 
-    protected function CleanUp() {
+    protected function cleanUp() {
         // Only keep the last 25 revisions in the stylesheet directory.
-        $Revisions = glob(PATH_UPLOADS.'/CSSedit/*.css');
-        $RevisionCount = count($Revisions);
-        for ($i = 0; $RevisionCount - $i > 26; $i++) {
-            if (basename($Revisions[$i]) == 'source.css') {
-                continue;
+        $revisions = glob(PATH_UPLOADS.'/CSSedit/*.css');
+        for ($i = 0, $count = count($revisions); $count - $i > 26; $i++) {
+            if (basename($revisions[$i]) != 'source.css') {
+                unlink($revisions[$i]);
             }
-            unlink($Revisions[$i]);
         }
 
         //Remove cached previews
-        $CachePath = PATH_CACHE.'/CSSedit/';
-        foreach (glob(PATH_CACHE.'/CSSedit/*preview.css') as $Preview) {
-            unlink($Preview);
+        $cachePath = PATH_CACHE.'/CSSedit/';
+        foreach (glob($cachePath.'*preview.css') as $preview) {
+            unlink($preview);
         }
-        if (file_exists($CachePath.'previewsrc.css')) {
-            unlink($CachePath.'previewsrc.css');
+        if (file_exists($cachePath.'previewsrc.css')) {
+            unlink($cachePath.'previewsrc.css');
         }
     }
 
 
     // Compile and minify the stylesheet.
     // Returns true on success and false on failure.
-    protected function makeCSS($Sender, $String, $Preprocessor, $Preview) {
+    protected function makeCSS($sender, $string, $preprocessor, $preview) {
         // Use the creation timestamp as filename.
-        $Token = time();
-        $Filename = $Token.'.css';
-        $CachePath = PATH_CACHE.'/CSSedit/';
-        $FullPath = $CachePath.$Filename;
-        if (!file_exists($CachePath)) {
-            mkdir($CachePath, 0755, true);
+        $token = time();
+        $filename = $token.'.css';
+        $cachePath = PATH_CACHE.'/CSSedit/';
+        if (!file_exists($cachePath)) {
+            mkdir($cachePath, 0755, true);
         }
 
         // Save uncompressed source when in preview mode.
-        if ($Preview) {
-            file_put_contents($CachePath.'previewsrc.css', $String);
-            Gdn::Session()->Stash('CSSeditPreviewSource', $CachePath.'previewsrc.css');
+        if ($preview) {
+            file_put_contents($cachePath.'previewsrc.css', $string);
+            Gdn::session()->stash('CSSeditPreviewSource', $cachePath.'previewsrc.css');
         }
 
-        if ($Preprocessor == 1) {
+        if ($preprocessor == 1) {
             // Compile LESS
             $less = new lessc;
             try {
-                $String = $less->compile($String);
+                $string = $less->compile($string);
             } catch (exception $e) {
                 // Send the error message to the editor page.
-                $Sender->InformMessage($e->getMessage(), 'Dismissable');
+                $sender->informMessage($e->getMessage(), 'Dismissable');
                 return false;
             }
-        } elseif ($Preprocessor == 2) {
+        } elseif ($preprocessor == 2) {
             // Compile SCSS
             $scss = new scssc();
             try {
-                $String = $scss->compile($String);
+                $string = $scss->compile($string);
             } catch (exception $e) {
-                $Sender->InformMessage($e->getMessage(), 'Dismissable');
+                $sender->informMessage($e->getMessage(), 'Dismissable');
                 return false;
             }
         }
 
         // Minify and save the stylesheet.
-        $String = Minify_CSS_Compressor::process($String);
+        $string = Minify_CSS_Compressor::process($string);
 
-        if ($Preview) {
-            file_put_contents($CachePath.$Token.'preview.css', $String);
-            Gdn::Session()->Stash('CSSeditPreview', $Token.'preview.css');
+        if ($preview) {
+            file_put_contents($cachePath.$token.'preview.css', $string);
+            Gdn::session()->stash('CSSeditPreview', $token.'preview.css');
         } else {
-            file_put_contents($FullPath, $String);
-            $OldStyleSheet = C('Plugins.CSSedit.Stylesheet');
-            if ($OldStyleSheet && file_exists($CachePath.$OldStyleSheet)) {
-                unlink($CachePath.$OldStyleSheet);
+            file_put_contents($cachePath.$filename, $string);
+            $oldStyleSheet = c('Plugins.CSSedit.Stylesheet');
+            if ($oldStyleSheet && file_exists($cachePath.$oldStyleSheet)) {
+                unlink($cachePath.$oldStyleSheet);
             }
-            SaveToConfig('Plugins.CSSedit.Stylesheet', $Filename);
+            saveToConfig('Plugins.CSSedit.Stylesheet', $filename);
         }
         return true;
     }
