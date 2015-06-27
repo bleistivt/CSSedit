@@ -1,16 +1,16 @@
 <?php if (!defined('APPLICATION')) exit();
 
-echo Wrap($this->Data('Title'), 'h1');
+echo wrap($this->data('Title'), 'h1');
 
-$StyleRevisions = array_reverse(glob(PATH_UPLOADS.'/CSSedit/*.css'));
-if (count($StyleRevisions) > 1) {
-    echo '<div class="Help Aside" style="border-top:none;"><h2>', T('Revisions'), '</h2><ul>';
-    foreach ($StyleRevisions as $rev) {
+$revisions = array_reverse(glob(PATH_UPLOADS.'/CSSedit/*.css'));
+if (count($revisions) > 1) {
+    echo '<div class="Help Aside" style="border-top:none;"><h2>', t('Revisions'), '</h2><ul>';
+    foreach ($revisions as $rev) {
         if (basename($rev) == 'source.css') {
             continue;
         }
-        $revtime = Gdn_Format::DateFull(basename($rev, '.css'));
-        echo Wrap(Anchor($revtime, '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
+        $revtime = Gdn_Format::dateFull(basename($rev, '.css'));
+        echo wrap(anchor($revtime, '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
     }
     echo '</ul></div>';
 }
@@ -23,31 +23,31 @@ if (count($StyleRevisions) > 1) {
         </li>
     </ul>
     <?php
-    echo $this->Form->Open(array('id' => 'Form_CSSedit'));
-    echo $this->Form->Errors();
+    echo $this->Form->open(array('id' => 'Form_CSSedit'));
+    echo $this->Form->errors();
     ?>
     <ul>
         <li id="NoJsForm">
-        <?php echo $this->Form->TextBox('Style', array('MultiLine' => true, 'class' => 'InputBox WideInput')); ?>
+        <?php echo $this->Form->textBox('Style', array('MultiLine' => true, 'class' => 'InputBox WideInput')); ?>
         </li>
         <li>
-        <?php echo $this->Form->DropDown('Preprocessor', array(0 => 'CSS', 1 => 'LESS', 2 => 'SCSS')); ?>
+        <?php echo $this->Form->dropDown('Preprocessor', array(0 => 'CSS', 1 => 'LESS', 2 => 'SCSS')); ?>
         <div style="display:inline-block;">
-            <?php echo $this->Form->CheckBox('AddOnMobile', 'Enable on mobile theme'); ?>
+            <?php echo $this->Form->checkBox('AddOnMobile', 'Enable on mobile theme'); ?>
         </div>
         </li>
         <li>
-          <?php if ($this->Form->GetValue('Style') && C('Garden.Theme') == 'default') {
+          <?php if ($this->Form->getValue('Style') && c('Garden.Theme') == 'default') {
                     // taget="_blank" until there is a way to download a file from a popup.
-                    echo Anchor(T('Export as theme'), '/settings/cssexport', array('target' => '_blank'));
+                    echo anchor(t('Export as theme'), '/settings/cssexport', array('target' => '_blank'));
                 } ?>
         </li>
         <li>
-        <?php echo $this->Form->Hidden('Preview', array('id' => 'PreviewToggle', 'value' => false));
-              echo $this->Form->Button('Preview', array('class' => 'Button CSSeditPrev', 'style' => 'display:none;'));
-              echo $this->Form->Button('Save', array('class' => 'Button CSSeditSave')); ?>
+        <?php echo $this->Form->hidden('Preview', array('id' => 'PreviewToggle', 'value' => false));
+              echo $this->Form->button('Preview', array('class' => 'Button CSSeditPrev', 'style' => 'display:none;'));
+              echo $this->Form->button('Save', array('class' => 'Button CSSeditSave')); ?>
         </li>
     </ul>
-    <?php echo $this->Form->Close(); ?>
+    <?php echo $this->Form->close(); ?>
     </div>
 </div>
