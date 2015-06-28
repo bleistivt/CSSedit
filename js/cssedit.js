@@ -1,5 +1,5 @@
 /*jslint browser: true, this: true */
-/*global jQuery, window, ace*/
+/*global jQuery, window, ace, gdn*/
 
 jQuery(function ($) {
     'use strict';
