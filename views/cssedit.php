@@ -2,15 +2,10 @@
 
 echo wrap($this->data('Title'), 'h1');
 
-$revisions = array_reverse(glob(PATH_UPLOADS.'/CSSedit/*.css'));
-if (count($revisions) > 1) {
+if ($this->data('revisions')) {
     echo '<div class="Help Aside" style="border-top:none;"><h2>', t('Revisions'), '</h2><ul>';
-    foreach ($revisions as $rev) {
-        if (basename($rev) == 'source.css') {
-            continue;
-        }
-        $revtime = Gdn_Format::dateFull(basename($rev, '.css'));
-        echo wrap(anchor($revtime, '/uploads/CSSedit/'.basename($rev), 'CSSrevision'), 'li');
+    foreach ($this->data('revisions') as $time => $url) {
+        echo wrap(anchor(Gdn_Format::dateFull($time), $url, 'CSSrevision'), 'li');
     }
     echo '</ul></div>';
 }
