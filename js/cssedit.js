@@ -59,7 +59,7 @@ jQuery(function ($) {
         e.preventDefault();
         var time = $(this).text();
         $.get($(this).attr('href'), function (data) {
-            var confirm = window.confirm('Load ' + time + ' revision?\nAll unsaved changes will be lost.');
+            var confirm = window.confirm(gdn.definition('CSSedit.loadMessage').replace('%s', time));
             if (confirm) {
                 editor.setValue(data);
             }
@@ -67,8 +67,8 @@ jQuery(function ($) {
     });
 
     $(window).on('beforeunload', function () {
-        if (editor.getValue() !== css && !leave) {
-            return 'Do you really want to leave? Your changes will be lost.';
+        if ((editor.getValue() !== css || gdn.definition('CSSedit.confirmLeave', false)) && !leave) {
+            return gdn.definition('CSSedit.leaveMessage');
         }
     });
 
