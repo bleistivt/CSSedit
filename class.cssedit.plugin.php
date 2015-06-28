@@ -4,7 +4,7 @@ $PluginInfo['CSSedit'] = array(
     'Name' => 'CSSedit',
     'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
     'Version' => '1.2',
-    'RequiredApplications' => array('Vanilla' => '2.2'),
+    'RequiredApplications' => array('Vanilla' => '2.1'),
     'Author' => 'Bleistivt',
     'AuthorUrl' => 'http://bleistivt.net',
     'SettingsPermission' => 'Garden.Settings.Manage',
@@ -29,7 +29,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         }
         if ($preview = Gdn::session()->stash('CSSeditPreview', '', false)) {
             // Preview a stylesheet
-            $sender->addCssFile('cache/CSSedit/'.$preview);
+            $sender->addCssFile(asset('cache/CSSedit/'.$preview, true));
             $icon = smartAsset('plugins/CSSedit/icon.png');
             $sender->informMessage(
                 wrap('', 'span', array(
@@ -41,7 +41,7 @@ class CSSeditPlugin extends Gdn_Plugin {
             );
         } elseif (c('CSSedit.Stylesheet')) {
             // Add the actual stylesheet to the page.
-            $sender->addCssFile('cache/CSSedit/'.c('CSSedit.Stylesheet'));
+            $sender->addCssFile(asset('cache/CSSedit/'.c('CSSedit.Stylesheet'), true));
         }
     }
 
@@ -144,7 +144,6 @@ class CSSeditPlugin extends Gdn_Plugin {
                 $zip->addFromString($slug.'/about.php', $about);
                 $zip->close();
 
-                safeHeader('Content-Length: '.filesize($file));
                 Gdn_FileSystem::serveFile($file, $slug.'.zip', 'application/zip');
 
             } elseif (!$this->stylesheet()) {
