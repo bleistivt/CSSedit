@@ -58,6 +58,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
         // Check if the preview button was toggled.
         $preview = $sender->Form->getFormValue('Preview');
+        $source = '';
 
         if ($sender->Form->authenticatedPostBack()) {
             // Save the config values.
@@ -144,7 +145,7 @@ class CSSeditPlugin extends Gdn_Plugin {
                 $zip->close();
 
                 safeHeader('Content-Length: '.filesize($file));
-                Gdn_FileSystem::serveFile($file, $Name = $slug.'.zip', $MimeType = 'application/zip');
+                Gdn_FileSystem::serveFile($file, $slug.'.zip', 'application/zip');
 
             } elseif (!$this->stylesheet()) {
                 $sender->Form->addError(t('No stylesheet found.'));
