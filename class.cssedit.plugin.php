@@ -86,7 +86,7 @@ class CSSeditPlugin extends Gdn_Plugin {
                 $source = Gdn_FileSystem::getContents($preview);
                 // End the preview if the user goes back to the editor.
                 $preview = false;
-                $sender->addDefinition('CSSedit.ConfirmLeave', true);
+                $sender->addDefinition('CSSedit.confirmLeave', true);
             } else {
                 $source = Gdn_FileSystem::getContents($this->stylesheet(true));
             }
@@ -104,6 +104,8 @@ class CSSeditPlugin extends Gdn_Plugin {
         $sender->addSideMenu('settings/cssedit');
         $sender->addJsFile('ace.js', 'plugins/CSSedit/js/ace-min-noconflict');
         $sender->addJsFile('cssedit.js', 'plugins/CSSedit');
+        $sender->addDefinition('CSSedit.loadMessage', t("Load %s revision?\nAll unsaved changes will be lost."));
+        $sender->addDefinition('CSSedit.leaveMessage', t('Do you really want to leave? Your changes will be lost.'));
 
         $sender->render('cssedit', '', 'plugins/CSSedit');
     }
