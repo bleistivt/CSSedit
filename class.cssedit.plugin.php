@@ -87,7 +87,7 @@ class CSSeditPlugin extends Gdn_Plugin {
                 // End the preview if the user goes back to the editor.
                 $preview = false;
             } else {
-                $source = Gdn_FileSystem::getContents($this->stylesheet());
+                $source = Gdn_FileSystem::getContents($this->stylesheet(true));
             }
         }
 
