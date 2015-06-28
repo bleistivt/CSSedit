@@ -95,7 +95,7 @@ class CSSeditPlugin extends Gdn_Plugin {
             redirect('/');
         }
 
-        //Render the editor page
+        // Render the editor page
         $sender->Form->setValue('Style', $source);
         $sender->title(t('CSS Editor'));
         $sender->setData('revisions', $this->revisions());
@@ -175,7 +175,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
     // Compile and minify the stylesheet.
     private function save($string, $preprocessor, $preview = false) {
-        // Use the creation timestamp as filename.
+        // Use the creation timestamp for the filename.
         $token = time();
 
         if (!file_exists($this->sourceDir)) {
@@ -197,16 +197,13 @@ class CSSeditPlugin extends Gdn_Plugin {
         }
 
         if ($preprocessor == 1) {
-            // Compile LESS
             $less = new lessc;
             $string = $less->compile($string);
         } elseif ($preprocessor == 2) {
-            // Compile SCSS
             $scss = new scssc();
             $string = $scss->compile($string);
         }
 
-        // Minify and save the stylesheet.
         $string = Minify_CSS_Compressor::process($string);
 
         if ($preview) {
