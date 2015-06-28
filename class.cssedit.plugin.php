@@ -24,7 +24,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
     // Adds the stylesheet to every page except the dashboard.
     public function base_render_before($sender) {
-        if ($sender->MasterView == 'admin' || (isMobile() && !c('CSSedit.AddOnMobile'))) {
+        if ($sender->MasterView == 'admin' || (isMobile() && !c('CSSedit.Mobile'))) {
             return;
         }
         if ($preview = Gdn::session()->stash('CSSeditPreview', '', false)) {
@@ -39,9 +39,9 @@ class CSSeditPlugin extends Gdn_Plugin {
                 .anchor(t('Return to the editor'), 'settings/cssedit'),
                 'HasSprite'
             );
-        } elseif (c('CSSedit.Stylesheet')) {
+        } elseif (c('CSSedit.Token')) {
             // Add the actual stylesheet to the page.
-            $sender->addCssFile(asset('cache/CSSedit/'.c('CSSedit.Stylesheet'), true));
+            $sender->addCssFile(asset('cache/CSSedit/'.c('CSSedit.Token').'.css', true));
         }
     }
 
@@ -63,7 +63,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         if ($sender->Form->authenticatedPostBack()) {
             // Save the config values.
             saveToConfig('CSSedit.Preprocessor', $sender->Form->getValue('Preprocessor', 0));
-            saveToConfig('CSSedit.AddOnMobile', $sender->Form->getValue('AddOnMobile'));
+            saveToConfig('CSSedit.Mobile', $sender->Form->getValue('Mobile'));
 
             // Try to save the stylesheet.
             try {
@@ -79,13 +79,14 @@ class CSSeditPlugin extends Gdn_Plugin {
         } else {
             // Prepare the form.
             $sender->Form->setValue('Preprocessor', c('CSSedit.Preprocessor'));
-            $sender->Form->setValue('AddOnMobile', c('CSSedit.AddOnMobile'));
+            $sender->Form->setValue('Mobile', c('CSSedit.Mobile'));
             Gdn::session()->stash('CSSeditPreview');
 
             if ($preview = Gdn::session()->stash('CSSeditPreviewSource')) {
                 $source = Gdn_FileSystem::getContents($preview);
                 // End the preview if the user goes back to the editor.
                 $preview = false;
+                $sender->addDefinition('CSSedit.ConfirmLeave', true);
             } else {
                 $source = Gdn_FileSystem::getContents($this->stylesheet(true));
             }
@@ -164,10 +165,10 @@ class CSSeditPlugin extends Gdn_Plugin {
     private function stylesheet($source = false) {
         if ($source) {
             return $this->sourceDir.'source.css';
-        } else if (!c('CSSedit.Stylesheet')) {
+        } else if (!c('CSSedit.Token')) {
             return false;
         } else {
-            return $this->cacheDir.c('CSSedit.Stylesheet');
+            return $this->cacheDir.c('CSSedit.Token').'.css';
         }
     }
 
@@ -206,12 +207,12 @@ class CSSeditPlugin extends Gdn_Plugin {
         $string = Minify_CSS_Compressor::process($string);
 
         if ($preview) {
-            Gdn_FileSystem::saveFile($this->cacheDir.$token.'preview.css', $string);
-            Gdn::session()->stash('CSSeditPreview', $token.'preview.css');
+            Gdn_FileSystem::saveFile($this->cacheDir.$token.'.preview.css', $string);
+            Gdn::session()->stash('CSSeditPreview', $token.'.preview.css');
         } else {
             Gdn_FileSystem::saveFile($this->cacheDir.$token.'.css', $string);
             Gdn_FileSystem::removeFolder($this->stylesheet());
-            saveToConfig('CSSedit.Stylesheet', $token.'.css');
+            saveToConfig('CSSedit.Token', $token);
         }
     }
 
@@ -222,7 +223,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         array_map('unlink', array_slice($revisions, 25));
 
         // Remove cached previews
-        array_map('unlink', glob($this->cacheDir.'*preview.css'));
+        array_map('unlink', glob($this->cacheDir.'*.preview.css'));
         Gdn_FileSystem::removeFolder($this->cacheDir.'previewsrc.css');
     }
 
