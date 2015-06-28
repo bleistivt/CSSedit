@@ -46,7 +46,7 @@ class CSSeditPlugin extends Gdn_Plugin {
     }
 
 
-    // Adds the CSSedit Link to the Dashboard.
+    // Adds the CSSedit link to the Dashboard.
     public function base_getAppSettingsMenuItems_handler($sender, &$args) {
         $args['SideMenu']->addLink('Appearance', t('CSS Editor'), 'settings/cssedit', 'Garden.Settings.Manage');
     }
@@ -72,7 +72,7 @@ class CSSeditPlugin extends Gdn_Plugin {
             } catch (Exception $e) {
                 $message = t('Compilation Error:').'<br>'.$e->getMessage();
                 $sender->informMessage(sprite('Bug', 'InformSprite').$message, 'Dismissable HasSprite');
-                // Don't preview anything if an error has ocurred.
+                // Don't preview anything if an error has occurred.
                 $preview = false;
             }
 
