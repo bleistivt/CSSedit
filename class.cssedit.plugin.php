@@ -199,7 +199,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         }
 
         if ($preprocessor == 1) {
-            $less = new lessc;
+            $less = new lessc();
             $string = $less->compile($string);
         } elseif ($preprocessor == 2) {
             $scss = new scssc();
