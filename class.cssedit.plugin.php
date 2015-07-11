@@ -187,17 +187,28 @@ class CSSeditPlugin extends Gdn_Plugin {
             mkdir($this->cacheDir, 0755, true);
         }
 
-        // Save the uncompressed source.
         if ($preview) {
+            // Save the uncompressed source.
             Gdn_FileSystem::saveFile($this->cacheDir.'previewsrc.css', $string);
             Gdn::session()->stash('CSSeditPreviewSource', $this->cacheDir.'previewsrc.css');
+            $string = $this->process($string, $preprocessor);
+            Gdn_FileSystem::saveFile($this->cacheDir.$token.'.preview.css', $string);
+            Gdn::session()->stash('CSSeditPreview', $token.'.preview.css');
         } else {
             Gdn_FileSystem::saveFile($this->stylesheet(true), $string);
             // Save a revision.
             Gdn_FileSystem::saveFile($this->sourceDir.time().'.rev.css', $string);
             $this->clean();
+            $string = $this->process($string, $preprocessor);
+            Gdn_FileSystem::saveFile($this->cacheDir.$token.'.css', $string);
+            Gdn_FileSystem::removeFolder($this->stylesheet());
+            saveToConfig('CSSedit.Token', $token);
         }
+    }
 
+
+    // Processes a CSS string. Compilation errors throw exceptions.
+    private function process($string, $preprocessor == 0) {
         if ($preprocessor == 1) {
             $less = new lessc();
             $string = $less->compile($string);
@@ -205,17 +216,7 @@ class CSSeditPlugin extends Gdn_Plugin {
             $scss = new scssc();
             $string = $scss->compile($string);
         }
-
-        $string = Minify_CSS_Compressor::process($string);
-
-        if ($preview) {
-            Gdn_FileSystem::saveFile($this->cacheDir.$token.'.preview.css', $string);
-            Gdn::session()->stash('CSSeditPreview', $token.'.preview.css');
-        } else {
-            Gdn_FileSystem::saveFile($this->cacheDir.$token.'.css', $string);
-            Gdn_FileSystem::removeFolder($this->stylesheet());
-            saveToConfig('CSSedit.Token', $token);
-        }
+        return Minify_CSS_Compressor::process($string);
     }
 
 
