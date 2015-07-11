@@ -208,7 +208,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
 
     // Processes a CSS string. Compilation errors throw exceptions.
-    private function process($string, $preprocessor == 0) {
+    private function process($string, $preprocessor = 0) {
         if ($preprocessor == 1) {
             $less = new lessc();
             $string = $less->compile($string);
