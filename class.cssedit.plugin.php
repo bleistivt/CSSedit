@@ -191,16 +191,24 @@ class CSSeditPlugin extends Gdn_Plugin {
             // Save the uncompressed source.
             Gdn_FileSystem::saveFile($this->cacheDir.'previewsrc.css', $string);
             Gdn::session()->stash('CSSeditPreviewSource', $this->cacheDir.'previewsrc.css');
+
             $string = $this->process($string, $preprocessor);
             Gdn_FileSystem::saveFile($this->cacheDir.$token.'.preview.css', $string);
+            
+            // Stash the compiled style for the preview.
             Gdn::session()->stash('CSSeditPreview', $token.'.preview.css');
+
         } else {
             Gdn_FileSystem::saveFile($this->stylesheet(true), $string);
-            // Save a revision.
+
+            // Save a new revision.
             Gdn_FileSystem::saveFile($this->sourceDir.time().'.rev.css', $string);
             $this->clean();
+
             $string = $this->process($string, $preprocessor);
             Gdn_FileSystem::saveFile($this->cacheDir.$token.'.css', $string);
+            
+            // Remove the old file and save the new token to the configuration.
             Gdn_FileSystem::removeFolder($this->stylesheet());
             saveToConfig('CSSedit.Token', $token);
         }
