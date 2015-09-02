@@ -131,7 +131,7 @@ class CSSeditPlugin extends Gdn_Plugin {
             // Write the contents of the about.php file.
             $about = "<?php\n\n".'$ThemeInfo[\''.$slug.'\'] = '.var_export($default, true).";\n";
 
-            $zip = new ZipArchive;
+            $zip = new ZipArchive();
             $file = tempnam(sys_get_temp_dir(), 'cssedit');
 
             if ($this->stylesheet() && $zip->open($file, ZIPARCHIVE::OVERWRITE) === true) {
