@@ -1,17 +1,17 @@
 <?php
 
-$PluginInfo['CSSedit'] = array(
+$PluginInfo['CSSedit'] = [
     'Name' => 'CSSedit',
     'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
     'Version' => '1.2',
-    'RequiredApplications' => array('Vanilla' => '2.1'),
+    'RequiredApplications' => ['Vanilla' => '2.1'],
     'Author' => 'Bleistivt',
     'AuthorUrl' => 'http://bleistivt.net',
     'SettingsPermission' => 'Garden.Settings.Manage',
     'SettingsUrl' => 'settings/cssedit',
     'License' => 'GNU GPL2',
     'MobileFriendly' => true
-);
+];
 
 class CSSeditPlugin extends Gdn_Plugin {
 
@@ -32,10 +32,10 @@ class CSSeditPlugin extends Gdn_Plugin {
             $sender->addCssFile(asset('cache/CSSedit/'.$preview, true));
             $icon = smartAsset('plugins/CSSedit/icon.png');
             $sender->informMessage(
-                wrap('', 'span', array(
+                wrap('', 'span', [
                     'class' => 'InformSprite',
-                    'style' => 'background:url('.$icon.');background-size:100%;margin:7px 1px;')
-                ).t('You are looking at a preview of your changes.').'<br>'
+                    'style' => 'background:url('.$icon.');background-size:100%;margin:7px 1px;'
+                ]).t('You are looking at a preview of your changes.').'<br>'
                 .anchor(t('Return to the editor'), 'settings/cssedit'),
                 'HasSprite'
             );
@@ -115,12 +115,12 @@ class CSSeditPlugin extends Gdn_Plugin {
     public function settingsController_cssExport_create($sender) {
         $sender->permission('Garden.Settings.Manage');
         // $ThemeInfo array
-        $default = array(
+        $default = [
             'Name' => t('Untitled'),
             'Version' => '1.0',
             'Author' => Gdn::session()->User->Name,
             'Description' => t('Created with CSSedit plugin, ').Gdn_Format::date()
-        );
+        ];
 
         if ($sender->Form->authenticatedPostBack()) {
             $post = array_filter(array_map('trim', $sender->Form->formValues()));
@@ -240,7 +240,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
 
     private function revisions() {
-        $revisions = array();
+        $revisions = [];
         foreach (array_reverse(glob($this->sourceDir.'*.rev.css')) as $rev) {
             $revisions[basename($rev, '.rev.css')] = Gdn_Upload::url('CSSedit/'.basename($rev));
         }
