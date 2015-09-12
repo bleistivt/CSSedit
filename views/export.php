@@ -12,7 +12,7 @@
   </li>
   <li>
     <?php echo $this->Form->label('Version')
-        .$this->Form->textBox('Version', array('style' => 'width: 50px;')); ?>
+        .$this->Form->textBox('Version', ['style' => 'width: 50px;']); ?>
   </li>
   <li>
     <?php echo $this->Form->label('Author')
@@ -20,7 +20,7 @@
   </li>
   <li>
     <?php echo $this->Form->label('Description')
-        .$this->Form->textBox('Description', array('MultiLine' => true)); ?>
+        .$this->Form->textBox('Description', ['MultiLine' => true]); ?>
   </li>
 </ul>
 <?php echo $this->Form->close('Export'); ?>
