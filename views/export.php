@@ -1,7 +1,11 @@
-<?php if (!defined('APPLICATION')) exit(); ?>
+<?php if (!defined('APPLICATION')) exit();
 
-<h1><?php echo $this->data('Title'); ?></h1>
-<?php echo $this->Form->open().$this->Form->errors();?>
+echo wrap($this->title(), 'h1');
+
+echo $this->Form->open()
+echo $this->Form->errors();
+?>
+
 <ul>
   <li>
     <div class="Info"><?php echo t('This packages your stylesheet so that it can be installed like a regular theme. <strong>If you have made changes, save before using this.</strong>'); ?></p>
