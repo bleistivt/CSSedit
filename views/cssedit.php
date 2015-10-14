@@ -1,6 +1,6 @@
 <?php if (!defined('APPLICATION')) exit();
 
-echo wrap($this->data('Title'), 'h1');
+echo wrap($this->title(), 'h1');
 
 if ($this->data('revisions')) {
     echo '<div class="Help Aside" style="border-top:none;"><h2>', t('Revisions'), '</h2><ul>';
