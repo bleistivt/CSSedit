@@ -2,7 +2,7 @@
 
 echo wrap($this->title(), 'h1');
 
-echo $this->Form->open()
+echo $this->Form->open();
 echo $this->Form->errors();
 ?>
 
