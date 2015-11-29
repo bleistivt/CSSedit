@@ -37,7 +37,7 @@ echo $this->Form->errors();
         2 => 'SCSS'
     ]); ?>
     <div style="display:inline-block;">
-        <?php echo $this->Form->checkBox('AddOnMobile', 'Enable on mobile theme'); ?>
+        <?php echo $this->Form->checkBox('Mobile', 'Enable on mobile theme'); ?>
     </div>
     </li>
     <li>
