@@ -4,7 +4,7 @@ $PluginInfo['CSSedit'] = [
     'Name' => 'CSSedit',
     'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
     'Version' => '1.2.1',
-    'RequiredApplications' => ['Vanilla' => '2.1'],
+    'RequiredApplications' => ['Vanilla' => '2.2'],
     'Author' => 'Bleistivt',
     'AuthorUrl' => 'http://bleistivt.net',
     'SettingsPermission' => 'Garden.Settings.Manage',
