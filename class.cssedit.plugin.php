@@ -1,24 +1,11 @@
 <?php
 
-$PluginInfo['CSSedit'] = [
-    'Name' => 'CSSedit',
-    'Description' => 'Adds a CSS (LESS/SCSS) style editor to the Dashboard.',
-    'Version' => '1.2.1',
-    'RequiredApplications' => ['Vanilla' => '2.2'],
-    'Author' => 'Bleistivt',
-    'AuthorUrl' => 'http://bleistivt.net',
-    'SettingsPermission' => 'Garden.Settings.Manage',
-    'SettingsUrl' => 'settings/cssedit',
-    'License' => 'GNU GPL2',
-    'MobileFriendly' => true
-];
-
 class CSSeditPlugin extends Gdn_Plugin {
 
     public function __construct() {
         parent::__construct();
-        $this->sourceDir = PATH_UPLOADS.'/CSSedit/';
-        $this->cacheDir = PATH_CACHE.'/CSSedit/';
+        $this->sourceDir = PATH_UPLOADS.'/CSSedit/source/';
+        $this->cacheDir = PATH_UPLOADS.'/CSSedit/cache/';
     }
 
 
@@ -93,7 +80,7 @@ class CSSeditPlugin extends Gdn_Plugin {
         }
 
         if ($preview) {
-            redirect('/');
+            redirectTo('/');
         }
 
         // Render the editor page
