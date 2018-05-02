@@ -4,22 +4,13 @@
 jQuery(function ($) {
     'use strict';
 
+    ace.config.set('workerPath', '//cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/');
     var editor = ace.edit('AceEditor'),
         leave = false,
-        initmode = $("#Form_Preprocessor option:selected").val(),
         css = document.getElementById('Form_Style').value,
-        scroll,
-        setMode = function (mode) {
-            if (mode === '1') {
-                editor.getSession().setMode('ace/mode/less');
-            } else if (mode === '2') {
-                editor.getSession().setMode('ace/mode/scss');
-            } else {
-                editor.getSession().setMode('ace/mode/css');
-            }
-        };
+        scroll;
 
-    setMode(initmode);
+    editor.session.setMode('ace/mode/css');
     editor.$blockScrolling = Infinity;
     editor.setTheme('ace/theme/crimson_editor');
     editor.setValue(css, -1);
@@ -49,10 +40,6 @@ jQuery(function ($) {
             scroll: editor.getSession().getScrollTop()
         }));
         $('#Form_CSSedit').submit();
-    });
-
-    $('#Form_Preprocessor').change(function () {
-        setMode($("#Form_Preprocessor option:selected").val());
     });
 
     $('.CSSrevision').click(function (e) {
