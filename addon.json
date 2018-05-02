@@ -1,10 +1,11 @@
 {
     "name": "CSSedit",
-    "description": "Adds a CSS (LESS/SCSS) style editor to the Dashboard.",
-    "version": "1.2.1",
+    "description": "Adds a CSS style editor to the Dashboard.",
+    "version": "2.0",
     "settingsPermission": "Garden.Settings.Manage",
     "settingsUrl": "settings/cssedit",
     "license": "GNU GPL2",
+    "gitHub": "bleistivt/CSSedit",
     "mobileFriendly": true,
     "key": "cssedit",
     "type": "addon",
