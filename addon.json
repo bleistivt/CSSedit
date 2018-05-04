@@ -1,9 +1,10 @@
 {
     "name": "CSSedit",
     "description": "Adds a CSS style editor to the Dashboard.",
-    "version": "2.0",
+    "version": "2.0.1",
     "settingsPermission": "Garden.Settings.Manage",
     "settingsUrl": "settings/cssedit",
+    "usePopupSettings": false,
     "license": "GNU GPL2",
     "gitHub": "bleistivt/CSSedit",
     "mobileFriendly": true,
@@ -14,8 +15,5 @@
             "name": "Bleistivt",
             "homepage": "http://bleistivt.net"
         }
-    ],
-    "require": {
-        "vanilla": ">=2.1"
-    }
+    ]
 }
