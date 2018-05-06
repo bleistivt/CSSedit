@@ -251,6 +251,12 @@ class CSSeditPlugin extends Gdn_Plugin {
 
     // Migrate old source files.
     public function setup() {
+        if (!file_exists($this->sourceDir)) {
+            mkdir($this->sourceDir, 0755, true);
+        }
+        if (!file_exists($this->cacheDir)) {
+            mkdir($this->cacheDir, 0755, true);
+        }
         if ($oldcss = glob(PATH_UPLOADS.'/CSSedit/*.css')) {
             foreach ($oldcss as $css) {
                 rename($css, $this->sourceDir.basename($css));
