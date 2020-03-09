@@ -16,7 +16,9 @@ class CSSeditPlugin extends Gdn_Plugin {
         if ($sender->MasterView == 'admin' || (isMobile() && !c('CSSedit.Mobile'))) {
             return;
         }
-        if ($preview = Gdn::session()->stash('CSSeditPreview', '', false)) {
+
+        $manage = checkPermission('Garden.Settings.Manage');
+        if ($mamage && $preview = Gdn::session()->stash('CSSeditPreview', '', false)) {
             // Preview a stylesheet
             $sender->addCssFile(Gdn_Upload::url($this->cachePath.$preview));
             $icon = smartAsset('plugins/CSSedit/icon.png');
