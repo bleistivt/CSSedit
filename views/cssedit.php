@@ -8,7 +8,7 @@ if ($this->data('revisions')) {
         $revisions .= wrap(anchor(Gdn_Format::dateFull($time), $url, 'CSSrevision'), 'li');
     }
     $revisions .= '</ul>';
-    helpAsset(t('Revisions'), $revisions);
+    helpAsset(Gdn::translate('Revisions'), $revisions);
 }
 ?>
 
@@ -28,10 +28,10 @@ echo $this->Form->errors();
     <li class="form-group">
         <?php echo $this->Form->toggle('Mobile', 'Enable on mobile theme'); ?>
     </li>
-    <?php if ($this->Form->getValue('Style') && c('Garden.Theme') == 'default') {
+    <?php if ($this->Form->getValue('Style') && Gdn::config('Garden.Theme') === 'default') {
         // taget="_blank" until there is a way to download a file from a popup.
         echo wrap(
-            anchor(t('Export as theme'), '/settings/cssexport', ['target' => '_blank', 'class' => 'btn']),
+            anchor(Gdn::translate('Export as theme'), '/settings/cssexport', ['target' => '_blank', 'class' => 'btn']),
             'li',
             ['class' => 'form-group']
         );

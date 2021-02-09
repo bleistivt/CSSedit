@@ -13,7 +13,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
     // Adds the stylesheet to every page except the dashboard.
     public function base_render_before($sender) {
-        if ($sender->MasterView == 'admin' || (isMobile() && !c('CSSedit.Mobile'))) {
+        if ($sender->MasterView === 'admin' || (isMobile() && !Gdn::config('CSSedit.Mobile'))) {
             return;
         }
 
@@ -26,20 +26,20 @@ class CSSeditPlugin extends Gdn_Plugin {
                 wrap('', 'span', [
                     'class' => 'InformSprite',
                     'style' => 'background:url('.$icon.');background-size:100%;margin:7px 1px;'
-                ]).t('You are looking at a preview of your changes.').'<br>'
-                .anchor(t('Return to the editor'), 'settings/cssedit'),
+                ]).Gdn::translate('You are looking at a preview of your changes.').'<br>'
+                .anchor(Gdn::translate('Return to the editor'), 'settings/cssedit'),
                 'HasSprite'
             );
-        } elseif (c('CSSedit.Token')) {
+        } elseif (Gdn::config('CSSedit.Token')) {
             // Add the actual stylesheet to the page.
-            $sender->addCssFile(Gdn_Upload::url($this->cachePath.c('CSSedit.Token').'.css'));
+            $sender->addCssFile(Gdn_Upload::url($this->cachePath.Gdn::config('CSSedit.Token').'.css'));
         }
     }
 
 
     // Adds the CSSedit link to the Dashboard.
     public function base_getAppSettingsMenuItems_handler($sender, $args) {
-        $args['SideMenu']->addLink('Appearance', t('CSS Editor'), 'settings/cssedit', 'Garden.Settings.Manage');
+        $args['SideMenu']->addLink('Appearance', Gdn::translate('CSS Editor'), 'settings/cssedit', 'Garden.Settings.Manage');
     }
 
 
@@ -58,9 +58,9 @@ class CSSeditPlugin extends Gdn_Plugin {
             // Try to save the stylesheet.
             try {
                 $this->save($sender->Form->getValue('Style', ''), $preview);
-                $sender->informMessage(sprite('Check', 'InformSprite').t('Your changes have been saved.'), 'HasSprite');
+                $sender->informMessage(sprite('Check', 'InformSprite').Gdn::translate('Your changes have been saved.'), 'HasSprite');
             } catch (Exception $e) {
-                $message = t('Compilation Error:').'<br>'.$e->getMessage();
+                $message = Gdn::translate('Compilation Error:').'<br>'.$e->getMessage();
                 $sender->informMessage(sprite('Bug', 'InformSprite').$message, 'Dismissable HasSprite');
                 // Don't preview anything if an error has occurred.
                 $preview = false;
@@ -68,7 +68,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
         } else {
             // Prepare the form.
-            $sender->Form->setValue('Mobile', c('CSSedit.Mobile'));
+            $sender->Form->setValue('Mobile', Gdn::config('CSSedit.Mobile'));
             Gdn::session()->stash('CSSeditPreview');
 
             if ($preview = Gdn::session()->stash('CSSeditPreviewSource')) {
@@ -87,7 +87,7 @@ class CSSeditPlugin extends Gdn_Plugin {
 
         // Render the editor page
         $sender->Form->setValue('Style', $source);
-        $sender->title(t('CSS Editor'));
+        $sender->title(Gdn::translate('CSS Editor'));
         $sender->setData('revisions', $this->revisions());
         $sender->setHighlightRoute('settings/cssedit');
         $sender->cssedit = true;
@@ -98,8 +98,8 @@ class CSSeditPlugin extends Gdn_Plugin {
         $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/theme-crimson_editor.js');
         $sender->addJsFile('cssedit.js', 'plugins/CSSedit');
 
-        $sender->addDefinition('CSSedit.loadMessage', t("Load %s revision?\nAll unsaved changes will be lost."));
-        $sender->addDefinition('CSSedit.leaveMessage', t('Do you really want to leave? Your changes will be lost.'));
+        $sender->addDefinition('CSSedit.loadMessage', Gdn::translate("Load %s revision?\nAll unsaved changes will be lost."));
+        $sender->addDefinition('CSSedit.leaveMessage', Gdn::translate('Do you really want to leave? Your changes will be lost.'));
 
         $sender->render('cssedit', '', 'plugins/CSSedit');
     }
@@ -109,18 +109,18 @@ class CSSeditPlugin extends Gdn_Plugin {
     public function settingsController_cssExport_create($sender) {
         $sender->permission('Garden.Settings.Manage');
         $sender->setHighlightRoute();
-        $sender->title(t('Export as theme'));
+        $sender->title(Gdn::translate('Export as theme'));
         $sender->setData(
             'Description',
-            t('This packages your stylesheet so that it can be installed like a regular theme. <strong>If you have made changes, save before using this.</strong>')
+            Gdn::translate('This packages your stylesheet so that it can be installed like a regular theme. <strong>If you have made changes, save before using this.</strong>')
         );
 
         // $ThemeInfo array
         $default = [
-            'name' => t('Untitled'),
+            'name' => Gdn::translate('Untitled'),
             'version' => '1.0',
             'authors' => Gdn::session()->User->Name,
-            'description' => t('Created using CSSedit plugin, ').Gdn_Format::date()
+            'description' => Gdn::translate('Created using CSSedit plugin, ').Gdn_Format::date()
         ];
 
         if ($sender->Form->authenticatedPostBack()) {
@@ -148,9 +148,9 @@ class CSSeditPlugin extends Gdn_Plugin {
                 Gdn_FileSystem::serveFile($file, $slug.'.zip', 'application/zip');
 
             } elseif (!$this->stylesheet()) {
-                $sender->Form->addError(t('No stylesheet found.'));
+                $sender->Form->addError(Gdn::translate('No stylesheet found.'));
             } else {
-                $sender->Form->addError(t('Couldn\'t create zip file.'));
+                $sender->Form->addError(Gdn::translate('Couldn\'t create zip file.'));
             }
         }
         $sender->Form->setData($default);
@@ -183,10 +183,10 @@ class CSSeditPlugin extends Gdn_Plugin {
     private function stylesheet($source = false) {
         if ($source) {
             return $this->sourceDir.'source.css';
-        } else if (!c('CSSedit.Token')) {
+        } else if (!Gdn::config('CSSedit.Token')) {
             return false;
         } else {
-            return $this->cacheDir.c('CSSedit.Token').'.css';
+            return $this->cacheDir.Gdn::config('CSSedit.Token').'.css';
         }
     }
 
@@ -248,22 +248,6 @@ class CSSeditPlugin extends Gdn_Plugin {
             $revisions[basename($rev, '.rev.css')] = Gdn_Upload::url($this->sourcePath.basename($rev));
         }
         return $revisions;
-    }
-
-
-    // Migrate old source files.
-    public function setup() {
-        if (!file_exists($this->sourceDir)) {
-            mkdir($this->sourceDir, 0755, true);
-        }
-        if (!file_exists($this->cacheDir)) {
-            mkdir($this->cacheDir, 0755, true);
-        }
-        if ($oldcss = glob(PATH_UPLOADS.'/CSSedit/*.css')) {
-            foreach ($oldcss as $css) {
-                rename($css, $this->sourceDir.basename($css));
-            }
-        }
     }
 
 }
