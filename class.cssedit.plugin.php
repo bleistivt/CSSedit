@@ -92,10 +92,10 @@ class CSSeditPlugin extends Gdn_Plugin {
         $sender->setHighlightRoute('settings/cssedit');
         $sender->cssedit = true;
 
-        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js');
-        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/mode-css.js');
-        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/worker-css.js');
-        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/theme-crimson_editor.js');
+        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js');
+        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-css.js');
+        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/worker-css.js');
+        $sender->addJsFile('//cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/theme-crimson_editor.js');
         $sender->addJsFile('cssedit.js', 'plugins/CSSedit');
 
         $sender->addDefinition('CSSedit.loadMessage', Gdn::translate("Load %s revision?\nAll unsaved changes will be lost."));
